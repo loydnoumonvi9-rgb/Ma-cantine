@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ma Cantine - Gestion Crédits & Scans</title>
+  <meta name="theme-color" content="#1e3a8a" />
+  <link rel="manifest" href="./manifest.json" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="https://unpkg.com/html5-qrcode"></script>
+  <style>
+    @media print {
+      body * { visibility: hidden; }
+      #badge-print-area, #badge-print-area * { visibility: visible; }
+      #badge-print-area { position: fixed; left: 0; top: 0; width: 100%; display: flex; justify-content: center; padding-top: 40px; }
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen font-sans">
+
+  <!-- HEADER -->
+  <header class="bg-blue-900 text-white px-4 py-3 shadow flex items-center justify-between">
+    <div>
+      <h1 class="font-bold text-lg">Ma Cantine SaaS</h1>
+      <p id="header-subtitle" class="text-xs text-blue-200">Gestion des crédits & repas</p>
+    </div>
+    <button id="btn-logout" onclick="logout()" class="hidden bg-blue-800 hover:bg-blue-700 text-xs px-3 py-1.5 rounded font-medium">
+      Déconnexion
+    </button>
+  </header>
+
+  <main class="max-w-3xl mx-auto p-4">
+
+    <!-- ÉCRAN 1 : CONNEXION -->
+    <section id="view-login" class="max-w-sm mx-auto mt-8 bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+      <h2 class="text-xl font-bold mb-1">Connexion</h2>
+      <p class="text-sm text-slate-500 mb-4">Accès Société ou Prestataire Restaurant</p>
+      <form onsubmit="handleLogin(event)" class="space-y-3">
+        <div>
+          <label class="block text-xs font-semibold uppercase text-slate-600 mb-1">Identifiant</label>
+          <input id="login-username" type="text" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm" placeholder="ex: admin_soc1" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold uppercase text-slate-600 mb-1">Mot de passe</label>
+          <input id="login-password" type="password" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm" placeholder="••••••••" />
+        </div>
+        <button id="btn-login-submit" type="submit" class="w-full bg-blue-900 text-white font-semibold py-2.5 rounded-lg hover:bg-blue-800">
+          Se connecter
+        </button>
+      </form>
+      <p id="login-error" class="text-red-600 text-sm mt-3 hidden"></p>
+    </section>
+
+    <!-- ÉCRAN 2 : ESPACE SOCIÉTÉ -->
+    <section id="view-company" class="hidden space-y-5">
+      <!-- Navigation onglets Société -->
+      <div class="grid grid-cols-3 gap-2 bg-white p-1.5 rounded-xl border border-slate-200 shadow-sm text-xs font-semibold">
+        <button onclick="switchCompanyTab('employees')" id="tab-comp-employees" class="py-2 rounded-lg bg-blue-900 text-white">Employés & QR</button>
+        <button onclick="switchCompanyTab('recharge')" id="tab-comp-recharge" class="py-2 rounded-lg text-slate-600">Recharger Crédit</button>
+        <button onclick="switchCompanyTab('reports')" id="tab-comp-reports" class="py-2 rounded-lg text-slate-600">Rapports</button>
+      </div>
+
+      <!-- Onglet 2A : Employés & QR Badges -->
+      <div id="comp-panel-employees" class="space-y-4">
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+          <h3 class="font-bold text-base mb-3">Créer un compte employé</h3>
+          <form onsubmit="createEmployee(event)" class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+            <input id="emp-matricule" type="text" required placeholder="Matricule (ex: M001)" class="border border-slate-300 rounded-lg px-3 py-2 text-sm" />
+            <input id="emp-fullname" type="text" required placeholder="Nom & Prénoms" class="border border-slate-300 rounded-lg px-3 py-2 text-sm" />
+            <button type="submit" class="bg-emerald-600 text-white font-semibold rounded-lg px-4 py-2 text-sm hover:bg-emerald-700">
+              + Créer & QR
+            </button>
+          </form>
+          <p id="emp-msg" class="text-sm mt-2 hidden"></p>
+        </div>
+
+        <!-- Aperçu Badge QR à imprimer -->
+        <div id="badge-modal" class="hidden bg-white p-4 rounded-xl border-2 border-blue-900 shadow-md">
+          <div class="flex justify-between items-center mb-3">
+            <span class="font-bold text-sm text-blue-900">Badge QR à imprimer</span>
+            <button onclick="document.getElementById('badge-modal').classList.add('hidden')" class="text-xs text-slate-500">Fermer ✕</button>
+          </div>
+          <div id="badge-print-area" class="flex flex-col items-center border border-dashed border-slate-400 p-4 rounded-lg bg-white">
+            <p id="badge-company" class="text-xs font-bold uppercase tracking-wider text-blue-900"></p>
+            <div id="badge-qrcode" class="my-3"></div>
+            <p id="badge-name" class="font-bold text-base text-slate-900"></p>
+            <p id="badge-matricule" class="text-xs font-mono text-slate-600"></p>
+          </div>
+          <button onclick="window.print()" class="mt-3 w-full bg-blue-900 text-white py-2 rounded-lg text-sm font-semibold">
+            Imprimer / Enregistrer PDF
+          </button>
+        </div>
+
+        <!-- Liste des employés -->
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+          <div class="flex justify-between items-center mb-3">
+            <h3 class="font-bold text-base">Liste des employés</h3>
+            <button onclick="loadEmployees()" class="text-xs text-blue-700 font-semibold">Actualiser</button>
+          </div>
+          <div id="employees-list" class="divide-y divide-slate-100 text-sm"></div>
+        </div>
+      </div>
+
+      <!-- Onglet 2B : Recharge Crédit -->
+      <div id="comp-panel-recharge" class="hidden bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-3">
+        <h3 class="font-bold text-base">Recharger un compte employé</h3>
+        <p class="text-xs text-slate-500">1 crédit = 1 repas (paiement espèces encaissé par la société).</p>
+        <form onsubmit="rechargeEmployee(event)" class="space-y-3">
+          <div>
+            <label class="block text-xs font-semibold mb-1">Matricule de l'employé</label>
+            <input id="rec-matricule" type="text" required placeholder="ex: M001" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm" />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold mb-1">Nombre de crédits à ajouter</label>
+            <input id="rec-credits" type="number" min="1" required placeholder="ex: 10" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm" />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold mb-1">Note / Référence reçu espèces</label>
+            <input id="rec-note" type="text" value="Paiement espèces" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm" />
+          </div>
+          <button type="submit" class="w-full bg-blue-900 text-white font-semibold py-2.5 rounded-lg text-sm">
+            Valider la recharge
+          </button>
+        </form>
+        <p id="rec-msg" class="text-sm mt-2 hidden"></p>
+      </div>
+
+      <!-- Onglet 2C : Rapports Société -->
+      <div id="comp-panel-reports" class="hidden space-y-4">
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-wrap gap-2 items-end">
+          <div>
+            <label class="block text-xs font-semibold mb-1">Date du rapport</label>
+            <input id="comp-report-date" type="date" class="border border-slate-300 rounded-lg px-3 py-1.5 text-sm" />
+          </div>
+          <button onclick="loadCompanyReport()" class="bg-blue-900 text-white px-4 py-2 rounded-lg text-sm font-semibold">
+            Charger le rapport
+          </button>
+        </div>
+
+        <div id="comp-report-summary" class="grid grid-cols-2 gap-3"></div>
+
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+          <h4 class="font-bold text-sm mb-2">Plats consommés du jour</h4>
+          <div id="comp-report-cons" class="divide-y divide-slate-100 text-xs"></div>
+        </div>
+
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+          <h4 class="font-bold text-sm mb-2">Recharges de crédits du jour</h4>
+          <div id="comp-report-rec" class="divide-y divide-slate-100 text-xs"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ÉCRAN 3 : ESPACE RESTAURANT -->
+    <section id="view-restaurant" class="hidden space-y-5">
+      <div class="grid grid-cols-2 gap-2 bg-white p-1.5 rounded-xl border border-slate-200 shadow-sm text-xs font-semibold">
+        <button onclick="switchRestoTab('scan')" id="tab-resto-scan" class="py-2 rounded-lg bg-blue-900 text-white">Scan Rapide (Boucle)</button>
+        <button onclick="switchRestoTab('report')" id="tab-resto-report" class="py-2 rounded-lg text-slate-600">Rapport & Remboursement</button>
+      </div>
+
+      <!-- Onglet 3A : Scanner en boucle -->
+      <div id="resto-panel-scan" class="space-y-4">
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm text-center">
+          <div class="flex justify-center gap-2 mb-3">
+            <button id="btn-start-scan" onclick="startLoopScanner()" class="bg-emerald-600 text-white font-semibold px-4 py-2 rounded-lg text-sm">
+              Démarrer la caméra QR
+            </button>
+            <button id="btn-stop-scan" onclick="stopLoopScanner()" class="hidden bg-slate-600 text-white font-semibold px-4 py-2 rounded-lg text-sm">
+              Arrêter caméra
+            </button>
+          </div>
+          <div id="qr-reader" class="mx-auto max-w-xs overflow-hidden rounded-lg"></div>
+          <p class="text-xs text-slate-500 mt-2">Mode boucle actif : après chaque scan (-1 crédit), l'appareil attend automatiquement l'employé suivant.</p>
+        </div>
+
+        <!-- Résultat instantané du scan -->
+        <div id="scan-feedback" class="hidden p-4 rounded-xl border-2 text-center shadow-sm">
+          <p id="scan-status-title" class="font-extrabold text-lg"></p>
+          <p id="scan-status-detail" class="text-sm mt-1"></p>
+          <p id="scan-status-balance" class="text-base font-bold mt-1"></p>
+        </div>
+      </div>
+
+      <!-- Onglet 3B : Rapport journalier & Remboursement plat fini -->
+      <div id="resto-panel-report" class="hidden space-y-4">
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-wrap gap-2 items-end">
+          <div>
+            <label class="block text-xs font-semibold mb-1">Date</label>
+            <input id="resto-report-date" type="date" class="border border-slate-300 rounded-lg px-3 py-1.5 text-sm" />
+          </div>
+          <button onclick="loadRestaurantReport()" class="bg-blue-900 text-white px-4 py-2 rounded-lg text-sm font-semibold">
+            Actualiser
+          </button>
+        </div>
+
+        <div id="resto-report-summary" class="grid grid-cols-2 gap-3"></div>
+
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+          <h4 class="font-bold text-sm mb-1">Plats enregistrés</h4>
+          <p class="text-xs text-slate-500 mb-3">Remboursement (+1 crédit) possible uniquement sur les plats validés aujourd'hui (ex : plat fini).</p>
+          <div id="resto-report-list" class="divide-y divide-slate-100 text-sm"></div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    // ============================================================
+    // REMPLACEZ PAR L'URL DE VOTRE GOOGLE APPS SCRIPT
+    // ============================================================
+    const API_URL = https://script.google.com/macros/s/AKfycbyb1tTeZyYCzQln2mzfLWCuoIaRxjsc7mMesHTa9np8blqltmvElkoNPMc1Iz9GpKEh/exec
+
+    let currentUser = null;
+    let html5QrCode = null;
+    let scanPaused = false;
+
+    // Enregistrement du Service Worker PWA
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./sw.js').catch(() => {});
+    }
+
+    // Initialisation date du jour
+    const todayISO = new Date().toISOString().slice(0, 10);
+    document.getElementById('comp-report-date').value = todayISO;
+    document.getElementById('resto-report-date').value = todayISO;
+
+    async function callApi(action, payload = {}) {
+      const res = await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ action, ...payload })
+      });
+      return await res.json();
+    }
+
+    function playBeep(success = true) {
+      try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        osc.type = 'sine';
+        osc.frequency.value = success ? 880 : 240;
+        osc.connect(ctx.destination);
+        osc.start();
+        setTimeout(() => osc.stop(), success ? 150 : 350);
+      } catch (e) {}
+    }
+
+    // AUTHENTIFICATION
+    async function handleLogin(e) {
+      e.preventDefault();
+      const btn = document.getElementById('btn-login-submit');
+      const errEl = document.getElementById('login-error');
+      errEl.classList.add('hidden');
+      btn.disabled = true;
+      btn.textContent = 'Connexion...';
+
+      try {
+        const username = document.getElementById('login-username').value;
+        const password = document.getElementById('login-password').value;
+        const data = await callApi('login', { username, password });
+
+        if (!data.ok) {
+          errEl.textContent = data.message || 'Erreur de connexion';
+          errEl.classList.remove('hidden');
+          return;
+        }
+
+        currentUser = data.user;
+        localStorage.setItem('cantine_user', JSON.stringify(currentUser));
+        openRoleView();
+      } catch (err) {
+        errEl.textContent = 'Impossible de joindre le serveur Apps Script.';
+        errEl.classList.remove('hidden');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Se connecter';
+      }
+    }
+
+    function openRoleView() {
+      document.getElementById('view-login').classList.add('hidden');
+      document.getElementById('btn-logout').classList.remove('hidden');
+
+      if (currentUser.role === 'company_admin') {
+        document.getElementById('header-subtitle').textContent = `Société : ${currentUser.company_code} (${currentUser.full_name})`;
+        document.getElementById('view-company').classList.remove('hidden');
+        loadEmployees();
+      } else if (currentUser.role === 'restaurant_operator') {
+        document.getElementById('header-subtitle').textContent = `Restaurant : ${currentUser.restaurant_code} (${currentUser.full_name})`;
+        document.getElementById('view-restaurant').classList.remove('hidden');
+      }
+    }
+
+    function logout() {
+      stopLoopScanner();
+      localStorage.removeItem('cantine_user');
+      location.reload();
+    }
+
+    // Restaure la session si déjà connecté
+    const saved = localStorage.getItem('cantine_user');
+    if (saved) {
+      currentUser = JSON.parse(saved);
+      openRoleView();
+    }
+
+    // ============================================================
+    // LOGIQUE SOCIÉTÉ
+    // ============================================================
+    function switchCompanyTab(tab) {
+      ['employees', 'recharge', 'reports'].forEach(t => {
+        document.getElementById(`comp-panel-${t}`).classList.toggle('hidden', t !== tab);
+        const btn = document.getElementById(`tab-comp-${t}`);
+        btn.className = t === tab ? 'py-2 rounded-lg bg-blue-900 text-white' : 'py-2 rounded-lg text-slate-600';
+      });
+      if (tab === 'reports') loadCompanyReport();
+    }
+
+    async function createEmployee(e) {
+      e.preventDefault();
+      const msgEl = document.getElementById('emp-msg');
+      const matricule = document.getElementById('emp-matricule').value;
+      const full_name = document.getElementById('emp-fullname').value;
+
+      const data = await callApi('createEmployee', {
+        company_code: currentUser.company_code,
+        matricule,
+        full_name
+      });
+
+      msgEl.classList.remove('hidden');
+      if (!data.ok) {
+        msgEl.className = 'text-sm mt-2 text-red-600 font-semibold';
+        msgEl.textContent = data.message;
+        return;
+      }
+
+      msgEl.className = 'text-sm mt-2 text-emerald-700 font-semibold';
+      msgEl.textContent = `Employé créé : ${data.employee.full_name} (${data.employee.matricule})`;
+      document.getElementById('emp-matricule').value = '';
+      document.getElementById('emp-fullname').value = '';
+      showQrBadge(data.employee);
+      loadEmployees();
+    }
+
+    function showQrBadge(emp) {
+      document.getElementById('badge-modal').classList.remove('hidden');
+      document.getElementById('badge-company').textContent = `SOCIÉTÉ : ${emp.company_code}`;
+      document.getElementById('badge-name').textContent = emp.full_name;
+      document.getElementById('badge-matricule').textContent = `Matricule : ${emp.matricule}`;
+      const qrBox = document.getElementById('badge-qrcode');
+      qrBox.innerHTML = '';
+      new QRCode(qrBox, { text: emp.qr_token, width: 160, height: 160 });
+    }
+
+    async function loadEmployees() {
+      const listEl = document.getElementById('employees-list');
+      listEl.innerHTML = '<p class="py-3 text-slate-400">Chargement...</p>';
+      const data = await callApi('listEmployees', { company_code: currentUser.company_code });
+      if (!data.ok || !data.employees.length) {
+        listEl.innerHTML = '<p class="py-3 text-slate-400">Aucun employé enregistré.</p>';
+        return;
+      }
+      listEl.innerHTML = data.employees.map(emp => `
+        <div class="py-2.5 flex items-center justify-between gap-2">
+          <div>
+            <p class="font-semibold text-slate-800">${emp.full_name}</p>
+            <p class="text-xs text-slate-500">Matricule : <span class="font-mono">${emp.matricule}</span></p>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="px-2.5 py-1 rounded-full text-xs font-bold ${Number(emp.credit_balance) > 0 ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-700'}">
+              ${emp.credit_balance} crédit(s)
+            </span>
+            <button onclick='showQrBadge(${JSON.stringify(emp)})' class="text-xs bg-slate-100 hover:bg-slate-200 px-2.5 py-1 rounded font-semibold">
+              Badge QR
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    async function rechargeEmployee(e) {
+      e.preventDefault();
+      const msgEl = document.getElementById('rec-msg');
+      const data = await callApi('rechargeCredits', {
+        company_code: currentUser.company_code,
+        matricule: document.getElementById('rec-matricule').value,
+        credits_added: Number(document.getElementById('rec-credits').value),
+        note: document.getElementById('rec-note').value,
+        created_by: currentUser.username
+      });
+
+      msgEl.classList.remove('hidden');
+      if (!data.ok) {
+        msgEl.className = 'text-sm mt-2 text-red-600 font-semibold';
+        msgEl.textContent = data.message;
+        return;
+      }
+      msgEl.className = 'text-sm mt-2 text-emerald-700 font-semibold';
+      msgEl.textContent = `${data.message} Nouveau solde de ${data.full_name} : ${data.new_balance} crédit(s).`;
+      document.getElementById('rec-matricule').value = '';
+      document.getElementById('rec-credits').value = '';
+      loadEmployees();
+    }
+
+    async function loadCompanyReport() {
+      const date = document.getElementById('comp-report-date').value;
+      const data = await callApi('companyReport', { company_code: currentUser.company_code, date });
+      if (!data.ok) return;
+
+      document.getElementById('comp-report-summary').innerHTML = `
+        <div class="bg-white p-3 rounded-xl border border-slate-200">
+          <p class="text-xs text-slate-500">Plats consommés</p>
+          <p class="text-2xl font-extrabold text-blue-900">${data.meals_consumed}</p>
+        </div>
+        <div class="bg-white p-3 rounded-xl border border-slate-200">
+          <p class="text-xs text-slate-500">Plats remboursés</p>
+          <p class="text-2xl font-extrabold text-amber-600">${data.meals_refunded}</p>
+        </div>
+      `;
+
+      document.getElementById('comp-report-cons').innerHTML = data.consumptions.length
+        ? data.consumptions.map(c => `
+            <div class="py-2 flex justify-between">
+              <span><strong>${c.full_name}</strong> (${c.matricule}) - Resto ${c.restaurant_code}</span>
+              <span class="font-bold ${c.status === 'CONSUMED' ? 'text-emerald-700' : 'text-amber-600'}">${c.status === 'CONSUMED' ? 'Servi' : 'Remboursé'}</span>
+            </div>
+          `).join('')
+        : '<p class="py-2 text-slate-400">Aucune consommation à cette date.</p>';
+
+      document.getElementById('comp-report-rec').innerHTML = data.recharges.length
+        ? data.recharges.map(r => `
+            <div class="py-2 flex justify-between">
+              <span><strong>${r.full_name}</strong> (${r.matricule}) — ${r.note}</span>
+              <span class="font-bold text-blue-800">+${r.credits_added} crédit(s)</span>
+            </div>
+          `).join('')
+        : '<p class="py-2 text-slate-400">Aucune recharge à cette date.</p>';
+    }
+
+    // ============================================================
+    // LOGIQUE RESTAURANT (SCAN EN BOUCLE + REMBOURSEMENT)
+    // ============================================================
+    function switchRestoTab(tab) {
+      ['scan', 'report'].forEach(t => {
+        document.getElementById(`resto-panel-${t}`).classList.toggle('hidden', t !== tab);
+        const btn = document.getElementById(`tab-resto-${t}`);
+        btn.className = t === tab ? 'py-2 rounded-lg bg-blue-900 text-white' : 'py-2 rounded-lg text-slate-600';
+      });
+      if (tab === 'report') {
+        stopLoopScanner();
+        loadRestaurantReport();
+      }
+    }
+
+    function startLoopScanner() {
+      document.getElementById('btn-start-scan').classList.add('hidden');
+      document.getElementById('btn-stop-scan').classList.remove('hidden');
+
+      html5QrCode = new Html5Qrcode('qr-reader');
+      html5QrCode.start(
+        { facingMode: 'environment' },
+        { fps: 10, qrbox: { width: 220, height: 220 } },
+        onQrScanned
+      ).catch(err => {
+        alert('Erreur accès caméra : ' + err);
+      });
+    }
+
+    function stopLoopScanner() {
+      if (html5QrCode) {
+        html5QrCode.stop().catch(() => {});
+        html5QrCode = null;
+      }
+      document.getElementById('btn-start-scan').classList.remove('hidden');
+      document.getElementById('btn-stop-scan').classList.add('hidden');
+    }
+
+    async function onQrScanned(decodedText) {
+      if (scanPaused) return;
+      scanPaused = true;
+
+      const box = document.getElementById('scan-feedback');
+      const title = document.getElementById('scan-status-title');
+      const detail = document.getElementById('scan-status-detail');
+      const balance = document.getElementById('scan-status-balance');
+
+      box.className = 'p-4 rounded-xl border-2 text-center shadow-sm bg-blue-50 border-blue-400 text-blue-900';
+      box.classList.remove('hidden');
+      title.textContent = 'Vérification en cours...';
+      detail.textContent = '';
+      balance.textContent = '';
+
+      try {
+        const res = await callApi('scanMeal', {
+          qr_token: decodedText,
+          restaurant_code: currentUser.restaurant_code,
+          scanned_by: currentUser.username
+        });
+
+        if (res.ok) {
+          playBeep(true);
+          box.className = 'p-4 rounded-xl border-2 text-center shadow-sm bg-emerald-50 border-emerald-600 text-emerald-900';
+          title.textContent = 'PLAT VALIDÉ (-1 CRÉDIT)';
+          detail.textContent = `${res.employee_name} (${res.matricule}) — ${res.company_code}`;
+          balance.textContent = `Solde restant : ${res.balance} crédit(s)`;
+        } else {
+          playBeep(false);
+          box.className = 'p-4 rounded-xl border-2 text-center shadow-sm bg-red-50 border-red-600 text-red-900';
+          title.textContent = 'REFUSÉ';
+          detail.textContent = res.message;
+          balance.textContent = res.balance !== undefined ? `Solde actuel : ${res.balance} crédit(s)` : '';
+        }
+      } catch (e) {
+        playBeep(false);
+        box.className = 'p-4 rounded-xl border-2 text-center shadow-sm bg-red-50 border-red-600 text-red-900';
+        title.textContent = 'ERREUR RÉSEAU';
+        detail.textContent = 'Vérifiez la connexion internet.';
+      }
+
+      // Pause courte de 2 secondes pour éviter le double scan du même badge, puis prêt pour le suivant !
+      setTimeout(() => {
+        scanPaused = false;
+      }, 2000);
+    }
+
+    async function loadRestaurantReport() {
+      const date = document.getElementById('resto-report-date').value;
+      const data = await callApi('restaurantReport', { restaurant_code: currentUser.restaurant_code, date });
+      if (!data.ok) return;
+
+      document.getElementById('resto-report-summary').innerHTML = `
+        <div class="bg-white p-3 rounded-xl border border-slate-200">
+          <p class="text-xs text-slate-500">Plats livrés</p>
+          <p class="text-2xl font-extrabold text-emerald-700">${data.delivered_count}</p>
+        </div>
+        <div class="bg-white p-3 rounded-xl border border-slate-200">
+          <p class="text-xs text-slate-500">Remboursés (plat fini)</p>
+          <p class="text-2xl font-extrabold text-amber-600">${data.refunded_count}</p>
+        </div>
+      `;
+
+      const isToday = date === new Date().toISOString().slice(0, 10);
+      document.getElementById('resto-report-list').innerHTML = data.consumptions.length
+        ? data.consumptions.map(c => `
+            <div class="py-2.5 flex items-center justify-between gap-2">
+              <div>
+                <p class="font-semibold">${c.full_name} <span class="text-xs font-mono text-slate-500">(${c.matricule} - ${c.company_code})</span></p>
+                <p class="text-xs text-slate-400">${new Date(c.scanned_at).toLocaleTimeString('fr-FR')}</p>
+              </div>
+              <div>
+                ${c.status === 'CONSUMED' && isToday
+                  ? `<button onclick="refundMeal('${c.id}')" class="bg-amber-500 hover:bg-amber-600 text-white text-xs font-semibold px-3 py-1.5 rounded-lg">Rembourser (+1)</button>`
+                  : `<span class="text-xs font-bold ${c.status === 'CONSUMED' ? 'text-emerald-700' : 'text-amber-600'}">${c.status === 'CONSUMED' ? 'Livré' : 'Remboursé'}</span>`
+                }
+              </div>
+            </div>
+          `).join('')
+        : '<p class="py-3 text-slate-400">Aucun plat enregistré à cette date.</p>';
+    }
+
+    async function refundMeal(consumptionId) {
+      if (!confirm('Confirmer le remboursement de +1 crédit (plat fini) ?')) return;
+      const res = await callApi('refundMeal', { consumption_id: consumptionId, reason: 'Plat fini' });
+      alert(res.message);
+      loadRestaurantReport();
+    }
+  </script>
+</body>
+</html>
