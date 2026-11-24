@@ -985,43 +985,73 @@
     }
 
     function printQrBadge() {
-      const name = document.getElementById('qr-emp-name').textContent;
-      const mat = document.getElementById('qr-emp-mat').textContent;
-      const qrContainer = document.getElementById('qrcode-box');
-      const img = qrContainer.querySelector('img');
-      const canvas = qrContainer.querySelector('canvas');
-      const qrSrc = img ? img.src : (canvas ? canvas.toDataURL('image/png') : '');
+  const name = document.getElementById('qr-emp-name').textContent || 'Employé';
+  const mat = document.getElementById('qr-emp-mat').textContent || '';
+  const qrContainer = document.getElementById('qrcode-box');
 
-      if (!qrSrc) {
-        alert('Aucun QR code à imprimer.');
-        return;
-      }
+  if (!qrContainer) {
+    alert('Aucun QR code à imprimer.');
+    return;
+  }
 
-      const win = window.open('', '_blank', 'width=400,height=500');
-      win.document.write(`
-        <html>
-          <head>
-            <title>Badge QR - ${name}</title>
-            <style>
-              body { font-family: Arial, sans-serif; text-align: center; padding: 24px; }
-              .card { border: 1px solid #cbd5e1; border-radius: 12px; padding: 20px; display: inline-block; }
-              h2 { margin: 0 0 6px; font-size: 18px; }
-              p { margin: 0 0 14px; color: #475569; font-size: 13px; }
-              img { width: 140px; height: 140px; }
-            </style>
-          </head>
-          <body>
-            <div class="card">
-              <h2>${name}</h2>
-              <p>${mat}</p>
-              <img src="${qrSrc}" />
-            </div>
-            <script>window.onload = function() { window.print(); };<\/script>
-          </body>
-        </html>
-      `);
-      win.document.close();
+  let qrSrc = '';
+  const img = qrContainer.querySelector('img');
+  const canvas = qrContainer.querySelector('canvas');
+
+  if (canvas) {
+    try {
+      qrSrc = canvas.toDataURL('image/png');
+    } catch (e) {
+      qrSrc = '';
     }
+  }
+
+  if (!qrSrc && img && img.src) {
+    qrSrc = img.src;
+  }
+
+  if (!qrSrc) {
+    alert('Aucun QR code à imprimer.');
+    return;
+  }
+
+  const win = window.open('', '_blank');
+  if (!win) {
+    alert('Autorisez les fenêtres pop-up dans Chrome pour imprimer le QR code.');
+    return;
+  }
+
+  win.document.write(`
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Badge QR - ${name}</title>
+        <style>
+          body { font-family: Arial, sans-serif; text-align: center; padding: 24px; color: #0f172a; }
+          .card { border: 1px solid #cbd5e1; border-radius: 14px; padding: 22px; display: inline-block; max-width: 280px; }
+          h2 { margin: 0 0 6px; font-size: 18px; }
+          p { margin: 0 0 14px; color: #475569; font-size: 13px; }
+          img { width: 160px; height: 160px; display: block; margin: 0 auto; }
+        </style>
+      </head>
+      <body>
+        <div class="card">
+          <h2>${name}</h2>
+          <p>${mat}</p>
+          <img src="${qrSrc}" alt="QR Code" />
+        </div>
+        <script>
+          window.onload = function() {
+            setTimeout(function() { window.print(); }, 200);
+          };
+        <\/script>
+      </body>
+    </html>
+  `);
+  win.document.close();
+}
+
 
     async function handleRecharge(e) {
       e.preventDefault();
