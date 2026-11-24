@@ -169,7 +169,6 @@
         <form onsubmit="handleRecharge(event)" class="space-y-3">
           <input id="rech-matricule" type="text" required placeholder="Matricule employé (ex: CIM001)" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm uppercase" />
           <input id="rech-amount" type="number" min="1" required placeholder="Nombre de crédits (ex: 10)" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm" />
-          <input id="rech-note" type="text" placeholder="Note (ex: Paiement espèces)" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm" />
           <button type="submit" class="w-full bg-emerald-700 text-white font-bold py-2.5 rounded-lg text-sm">Valider la recharge</button>
           <p id="rech-feedback" class="hidden text-sm font-medium"></p>
         </form>
@@ -518,7 +517,7 @@
       document.getElementById('qr-emp-mat').textContent = currentUser.company_code + ' • ' + matricule;
       const box = document.getElementById('qrcode-box');
       box.innerHTML = '';
-      new QRCode(box, { text: qrValue, width: 160, height: 160 });
+      new QRCode(box, { text: qrValue, width: 115, height: 115 });
     }
 
     async function handleRecharge(e) {
@@ -528,7 +527,6 @@
         company_code: currentUser.company_code,
         matricule: document.getElementById('rech-matricule').value,
         amount: document.getElementById('rech-amount').value,
-        note: document.getElementById('rech-note').value
       });
       fb.classList.remove('hidden');
       if (res.success) {
@@ -559,12 +557,12 @@
       html5QrCode = new Html5Qrcode('qr-reader');
       html5QrCode.start(
         { facingMode: 'environment' },
-        { fps: 10, qrbox: { width: 220, height: 220 } },
+        { fps: 15, qrbox: { width: 220, height: 220 } },
         async (decodedText) => {
           if (scanPaused) return;
           scanPaused = true;
           await processQrScan(decodedText);
-          setTimeout(() => { scanPaused = false; }, 2200);
+          setTimeout(() => { scanPaused = false; }, 900 );
         }
       ).catch(err => alert('Caméra inaccessible : ' + err));
     }
