@@ -128,7 +128,16 @@
           <button onclick="loadSuperAdminClients()" class="text-xs bg-slate-100 px-2.5 py-1 rounded-lg font-semibold">Actualiser</button>
         </div>
         <div id="sa-clients-list" class="space-y-2 text-sm"></div>
-      </div>
+     </div>
+      <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+     <h3 class="text-sm font-bold text-slate-900 mb-2">Modifier mon code d'accès</h3>
+     <form onsubmit="handleChangeAccessCode(event, 'sa')" class="space-y-2">
+       <input id="sa-old-code" type="password" required placeholder="Ancien code d'accès" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm" />
+       <input id="sa-new-code" type="password" required minlength="4" placeholder="Nouveau code d'accès (min. 4 car.)" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm" />
+       <button type="submit" class="w-full bg-slate-800 hover:bg-slate-700 text-white font-bold py-2 rounded-lg text-xs">Mettre à jour mon code</button>
+       <p id="sa-code-msg" class="hidden text-xs font-semibold"></p>
+     </form>
+   </div>
     </section>
 
     <!-- ÉCRAN 3 : ESPACE SOCIÉTÉ -->
@@ -194,6 +203,15 @@
           <div id="comp-cons-list" class="divide-y divide-slate-100 text-sm"></div>
         </div>
       </div>
+      <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+     <h3 class="text-sm font-bold text-slate-900 mb-2">Modifier mon code d'accès</h3>
+     <form onsubmit="handleChangeAccessCode(event, 'comp')" class="space-y-2">
+       <input id="comp-old-code" type="password" required placeholder="Ancien code d'accès" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm" />
+       <input id="comp-new-code" type="password" required minlength="4" placeholder="Nouveau code d'accès (min. 4 car.)" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm" />
+       <button type="submit" class="w-full bg-slate-800 hover:bg-slate-700 text-white font-bold py-2 rounded-lg text-xs">Mettre à jour mon code</button>
+       <p id="comp-code-msg" class="hidden text-xs font-semibold"></p>
+     </form>
+   </div>
     </section>
 
     <!-- ÉCRAN 4 : ESPACE RESTAURANT -->
@@ -238,13 +256,22 @@
           <div id="resto-report-list" class="divide-y divide-slate-100 text-sm"></div>
         </div>
       </div>
+      <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+     <h3 class="text-sm font-bold text-slate-900 mb-2">Modifier mon code d'accès</h3>
+     <form onsubmit="handleChangeAccessCode(event, 'resto')" class="space-y-2">
+       <input id="resto-old-code" type="password" required placeholder="Ancien code d'accès" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm" />
+       <input id="resto-new-code" type="password" required minlength="4" placeholder="Nouveau code d'accès (min. 4 car.)" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm" />
+       <button type="submit" class="w-full bg-slate-800 hover:bg-slate-700 text-white font-bold py-2 rounded-lg text-xs">Mettre à jour mon code</button>
+       <p id="resto-code-msg" class="hidden text-xs font-semibold"></p>
+     </form>
+   </div>
     </section>
 
   </main>
 
   <script>
-    // 'https://script.google.com/macros/s/AKfycbwAxdKRGyO8xYW-0cNU_NuJvd4dIcODSu1r80JGqAKKTJ-k54B7lkhCdCSfbjqsd72e/exec'
-    const API_URL = 'https://script.google.com/macros/s/AKfycbwAxdKRGyO8xYW-0cNU_NuJvd4dIcODSu1r80JGqAKKTJ-k54B7lkhCdCSfbjqsd72e/exec'
+    // 'https://script.google.com/macros/s/AKfycbxghyo82y73SnMvIHxFeFQAKI039J514f5jEKuuGWje0dT8m7ajxiSDMDcJXU8cxCGq/exec'
+    const API_URL = 'https://script.google.com/macros/s/AKfycbxghyo82y73SnMvIHxFeFQAKI039J514f5jEKuuGWje0dT8m7ajxiSDMDcJXU8cxCGq/exec'
 
     let currentUser = null;
     let pendingSetupUser = null;
@@ -361,7 +388,28 @@
       document.getElementById('view-setup-code').classList.add('hidden');
       document.getElementById('view-login').classList.remove('hidden');
     }
+  async function handleChangeAccessCode(e, prefix) {
+   e.preventDefault();
+   const oldInput = document.getElementById(prefix + '-old-code');
+   const newInput = document.getElementById(prefix + '-new-code');
+   const msgEl = document.getElementById(prefix + '-code-msg');
+   msgEl.classList.add('hidden');
 
+   const res = await callApi('change_access_code', {
+     username: currentUser.username,
+     old_code: oldInput.value,
+     new_code: newInput.value
+   });
+
+   msgEl.textContent = res.message;
+   msgEl.className = res.success ? 'text-xs font-semibold text-emerald-700' : 'text-xs font-semibold text-red-600';
+   msgEl.classList.remove('hidden');
+
+   if (res.success) {
+     oldInput.value = '';
+     newInput.value = '';
+   }
+ }
     function enterApp(user) {
       currentUser = user;
       document.getElementById('view-login').classList.add('hidden');
