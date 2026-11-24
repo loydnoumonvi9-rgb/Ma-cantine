@@ -130,6 +130,14 @@
         <div id="sa-clients-list" class="space-y-2 text-sm"></div>
      </div>
       <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+     <h3 class="text-sm font-bold text-slate-900 mb-2">Modifier mon identifiant Super-Admin</h3>
+     <form onsubmit="handleUpdateMyAdminUsername(event)" class="space-y-2">
+       <input id="sa-new-username" type="text" required minlength="3" placeholder="Nouvel identifiant Super-Admin" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm lowercase" />
+       <button type="submit" class="w-full bg-blue-900 hover:bg-blue-800 text-white font-bold py-2 rounded-lg text-xs">Enregistrer mon identifiant</button>
+       <p id="sa-user-msg" class="hidden text-xs font-semibold"></p>
+     </form>
+   </div>
+      <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
      <h3 class="text-sm font-bold text-slate-900 mb-2">Modifier mon code d'accès</h3>
      <form onsubmit="handleChangeAccessCode(event, 'sa')" class="space-y-2">
        <input id="sa-old-code" type="password" required placeholder="Ancien code d'accès" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm" />
@@ -138,6 +146,25 @@
        <p id="sa-code-msg" class="hidden text-xs font-semibold"></p>
      </form>
    </div>
+      <div id="sa-company-report-box" class="hidden bg-white p-4 rounded-2xl border border-blue-200 shadow-sm space-y-3">
+      <div class="flex items-center justify-between">
+        <h3 id="sa-rep-title" class="text-sm font-bold text-slate-900">Rapport société</h3>
+        <button type="button" onclick="closeSuperAdminCompanyReport()" class="text-xs text-slate-500 underline">Fermer</button>
+      </div>
+      <input id="sa-rep-date" type="date" onchange="reloadCurrentSuperAdminReport()" class="w-full border border-slate-300 rounded-lg px-3 py-1.5 text-xs" />
+      <div class="grid grid-cols-3 gap-2 text-center bg-slate-50 p-2.5 rounded-lg border border-slate-200 text-xs">
+        <div><span class="block text-slate-500">Servis</span><strong id="sa-rep-served" class="text-slate-900">0</strong></div>
+        <div><span class="block text-slate-500">Remboursés</span><strong id="sa-rep-refunded" class="text-amber-700">0</strong></div>
+        <div><span class="block text-slate-500">Net</span><strong id="sa-rep-net" class="text-emerald-700">0</strong></div>
+      </div>
+      <div class="grid grid-cols-2 gap-2">
+        <button type="button" onclick="downloadReportCsv('sa')" class="bg-slate-800 hover:bg-slate-700 text-white font-bold py-2 rounded-lg text-xs">Télécharger</button>
+        <button type="button" onclick="printReportSection('sa-report-printable', document.getElementById('sa-rep-title').textContent)" class="bg-blue-900 hover:bg-blue-800 text-white font-bold py-2 rounded-lg text-xs">Imprimer</button>
+      </div>
+      <div id="sa-report-printable" class="space-y-2">
+        <div id="sa-rep-list" class="space-y-2 text-xs"></div>
+      </div>
+    </div>
     </section>
 
     <!-- ÉCRAN 3 : ESPACE SOCIÉTÉ -->
@@ -200,6 +227,16 @@
         </div>
         <div class="bg-white p-4 rounded-xl border border-slate-200">
           <h3 class="font-bold text-sm mb-2">Repas consommés</h3>
+          <div class="grid grid-cols-3 gap-2 text-center bg-slate-50 p-2.5 rounded-lg border border-slate-200 text-xs">
+        <div><span class="block text-slate-500">Servis</span><strong id="comp-rep-served" class="text-slate-900">0</strong></div>
+        <div><span class="block text-slate-500">Remboursés</span><strong id="comp-rep-refunded" class="text-amber-700">0</strong></div>
+        <div><span class="block text-slate-500">Net</span><strong id="comp-rep-net" class="text-emerald-700">0</strong></div>
+      </div>
+      <div class="grid grid-cols-2 gap-2">
+        <button type="button" onclick="downloadReportCsv('comp')" class="bg-slate-800 hover:bg-slate-700 text-white font-bold py-2 rounded-lg text-xs">Télécharger</button>
+        <button type="button" onclick="printReportSection('comp-report-printable', 'Rapport journalier société')" class="bg-blue-900 hover:bg-blue-800 text-white font-bold py-2 rounded-lg text-xs">Imprimer</button>
+      </div>
+      <div id="comp-report-printable" class="space-y-2">
           <div id="comp-cons-list" class="divide-y divide-slate-100 text-sm"></div>
         </div>
       </div>
@@ -212,13 +249,28 @@
        <p id="comp-code-msg" class="hidden text-xs font-semibold"></p>
      </form>
    </div>
+        <div id="comp-panel-rchr" class="hidden bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-3">
+      <div class="flex items-center justify-between">
+        <p class="text-xs font-bold text-slate-800">Rapport des recharges (crédits)</p>
+        <span class="text-xs font-bold text-emerald-700">Total : <span id="comp-recharges-total">0</span> crédits</span>
+      </div>
+      <div class="grid grid-cols-2 gap-2">
+        <button type="button" onclick="downloadRechargesCsv()" class="bg-slate-800 hover:bg-slate-700 text-white font-bold py-2 rounded-lg text-xs">Télécharger</button>
+        <button type="button" onclick="printReportSection('comp-recharges-printable', 'Rapport des recharges')" class="bg-blue-900 hover:bg-blue-800 text-white font-bold py-2 rounded-lg text-xs">Imprimer</button>
+      </div>
+      <div id="comp-recharges-printable" class="space-y-2">
+        <div id="comp-recharges-list" class="space-y-2 text-xs"></div>
+      </div>
+    </div>
     </section>
 
     <!-- ÉCRAN 4 : ESPACE RESTAURANT -->
     <section id="view-restaurant" class="hidden space-y-4">
       <div class="grid grid-cols-2 gap-2 bg-white p-1.5 rounded-xl border border-slate-200">
-        <button onclick="switchRestoTab('scan')" id="tab-resto-scan" class="py-2 rounded-lg text-xs font-bold bg-blue-900 text-white">Démarrer le scan</button>
-        <button onclick="switchRestoTab('report')" id="tab-resto-report" class="py-2 rounded-lg text-xs font-bold text-slate-600">Rapport & Remboursement</button>
+        <div class="grid grid-cols-3 gap-2">
+      <button onclick="switchRestoTab('scan')" id="tab-resto-scan" class="py-2 rounded-lg text-xs font-bold bg-blue-900 text-white">Démarrer le scan</button>
+      <button onclick="switchRestoTab('refund')" id="tab-resto-refund" class="py-2 rounded-lg text-xs font-bold bg-slate-200 text-slate-800">Remboursement</button>
+      <button onclick="switchRestoTab('rep')" id="tab-resto-rep" class="py-2 rounded-lg text-xs font-bold bg-slate-200 text-slate-800">Rapport</button>
       </div>
 
       <!-- Onglet Scan -->
@@ -230,6 +282,15 @@
           <div id="qr-reader" class="mx-auto max-w-xs overflow-hidden rounded-lg"></div>
           <p class="text-xs text-slate-500">Mode boucle actif : chaque scan valide 1 plat (-1 crédit).</p>
         </div>
+        <div id="resto-panel-refund" class="hidden bg-white p-4 rounded-xl border border-amber-300 shadow-sm space-y-3">
+      <p class="text-xs font-bold text-amber-900">Scan QR en mode Remboursement (+1 crédit)</p>
+      <p class="text-[11px] text-slate-600">Scannez le badge de l’employé : l’application vérifie qu’il a bien été débité aujourd’hui dans ce restaurant avant de créditer +1.</p>
+      <button type="button" onclick="toggleRefundScanner()" id="btn-toggle-refund-scan" class="w-full bg-amber-600 hover:bg-amber-700 text-white font-bold py-2.5 rounded-lg text-xs">
+        Activer le scan de remboursement
+      </button>
+      <div id="qr-refund-reader" class="w-full rounded-lg overflow-hidden"></div>
+      <div id="resto-refund-result" class="hidden p-3 rounded-lg text-xs font-semibold"></div>
+    </div>
 
         <div id="scan-feedback" class="hidden p-4 rounded-xl border-2 text-center shadow-sm">
           <p id="scan-status-title" class="font-extrabold text-lg"></p>
@@ -253,6 +314,16 @@
         <div class="bg-white p-4 rounded-xl border border-slate-200">
           <h4 class="font-bold text-sm mb-1">Plats enregistrés</h4>
           <p class="text-xs text-slate-500 mb-3">Remboursement (+1 crédit) possible uniquement le jour même (ex: plat fini).</p>
+          <div id="resto-report-summary" class="grid grid-cols-3 gap-2 text-center bg-slate-50 p-2.5 rounded-lg border border-slate-200 text-xs">
+        <div><span class="block text-slate-500">Servis</span><strong id="resto-rep-served" class="text-slate-900">0</strong></div>
+        <div><span class="block text-slate-500">Remboursés</span><strong id="resto-rep-refunded" class="text-amber-700">0</strong></div>
+        <div><span class="block text-slate-500">Net</span><strong id="resto-rep-net" class="text-emerald-700">0</strong></div>
+      </div>
+      <div class="grid grid-cols-2 gap-2">
+        <button type="button" onclick="downloadReportCsv('resto')" class="bg-slate-800 hover:bg-slate-700 text-white font-bold py-2 rounded-lg text-xs">Télécharger</button>
+        <button type="button" onclick="printReportSection('resto-report-printable', 'Rapport journalier restaurant')" class="bg-blue-900 hover:bg-blue-800 text-white font-bold py-2 rounded-lg text-xs">Imprimer</button>
+      </div>
+      <div id="resto-report-printable" class="space-y-2">
           <div id="resto-report-list" class="divide-y divide-slate-100 text-sm"></div>
         </div>
       </div>
@@ -270,9 +341,8 @@
   </main>
 
   <script>
-    // 'https://script.google.com/macros/s/AKfycbxghyo82y73SnMvIHxFeFQAKI039J514f5jEKuuGWje0dT8m7ajxiSDMDcJXU8cxCGq/exec'
-    const API_URL = 'https://script.google.com/macros/s/AKfycbxghyo82y73SnMvIHxFeFQAKI039J514f5jEKuuGWje0dT8m7ajxiSDMDcJXU8cxCGq/exec'
-
+    // 'https://script.google.com/macros/s/AKfycbynJ-B-dWs_L9sdRnN_5pacLIT31TIEgPeEAb-DpdzvwIgeddME9qexMCh10El-v0r9/exec'
+    const API_URL = 'https://script.google.com/macros/s/AKfycbynJ-B-dWs_L9sdRnN_5pacLIT31TIEgPeEAb-DpdzvwIgeddME9qexMCh10El-v0r9/exec'
     let currentUser = null;
     let pendingSetupUser = null;
     let html5QrCode = null;
@@ -401,6 +471,44 @@
      new_code: newInput.value
    });
 
+    async function handleUpdateMyAdminUsername(e) {
+   e.preventDefault();
+   const input = document.getElementById('sa-new-username');
+   const msgEl = document.getElementById('sa-user-msg');
+   msgEl.classList.add('hidden');
+
+   const res = await callApi('admin_update_username', {
+     target_role: 'super_admin',
+     current_username: currentUser.username,
+     new_username: input.value
+   });
+
+   msgEl.textContent = res.message;
+   msgEl.className = res.success ? 'text-xs font-semibold text-emerald-700' : 'text-xs font-semibold text-red-600';
+   msgEl.classList.remove('hidden');
+
+   if (res.success) {
+     currentUser.username = res.new_username;
+     input.value = '';
+   }
+ }
+
+ async function editClientUsername(targetRole, targetCode, oldUsername) {
+   const proposed = prompt('Nouvel identifiant pour ' + oldUsername + ' :', oldUsername);
+   if (!proposed || proposed.trim().toLowerCase() === oldUsername.toLowerCase()) return;
+
+   const res = await callApi('admin_update_username', {
+     target_role: targetRole,
+     target_code: targetCode,
+     current_username: oldUsername,
+     new_username: proposed.trim().toLowerCase()
+   });
+
+   alert(res.message);
+   if (res.success) {
+     loadSuperAdminClients();
+   }
+ }
    msgEl.textContent = res.message;
    msgEl.className = res.success ? 'text-xs font-semibold text-emerald-700' : 'text-xs font-semibold text-red-600';
    msgEl.classList.remove('hidden');
@@ -496,12 +604,18 @@
               <span>${c.company_code}</span>
               <span class="text-xs bg-blue-100 text-blue-900 px-2 py-0.5 rounded">${c.restaurant_name} (${c.restaurant_code})</span>
             </div>
-            <p class="text-xs">Identifiant Société : ${compBadge}</p>
-            <p class="text-xs">Identifiant Resto : ${restBadge}</p>
-          </div>
-        `;
-      }).join('');
-    }
+            <div class="flex items-center justify-between text-xs">
+           <span>Identifiant Société : ${compBadge}</span>
+           ${c.company_account ? `<button onclick="editClientUsername('company_admin', '${c.company_code}', '${c.company_account.username}')" class="text-blue-800 underline font-semibold">Modifier ID</button>` : ''}
+         </div>
+         <div class="flex items-center justify-between text-xs">
+           <span>Identifiant Resto : ${restBadge}</span>
+           ${c.restaurant_account ? `<button onclick="editClientUsername('restaurant_operator', '${c.restaurant_code}', '${c.restaurant_account.username}')" class="text-blue-800 underline font-semibold">Modifier ID</button>` : ''}
+         </div>
+       </div>
+     `;
+   }).join('');
+ }
 
     // SOCIÉTÉ
     function switchCompanyTab(tab) {
@@ -739,6 +853,238 @@
       });
       if (!res.success) alert(res.message);
       loadRestaurantReport();
+    }
+    let refundQrScanner = null;
+    let refundScanPaused = false;
+    let lastReportRows = { resto: [], comp: [], sa: [] };
+    let lastRechargeRows = [];
+    let currentSaReportCompany = { code: '', name: '' };
+
+    function switchRestoTab(tab) {
+      document.getElementById('resto-panel-scan').classList.toggle('hidden', tab !== 'scan');
+      document.getElementById('resto-panel-refund').classList.toggle('hidden', tab !== 'refund');
+      document.getElementById('resto-panel-rep').classList.toggle('hidden', tab !== 'rep');
+
+      document.getElementById('tab-resto-scan').className = 'py-2 rounded-lg text-xs font-bold ' + (tab === 'scan' ? 'bg-blue-900 text-white' : 'bg-slate-200 text-slate-800');
+      document.getElementById('tab-resto-refund').className = 'py-2 rounded-lg text-xs font-bold ' + (tab === 'refund' ? 'bg-amber-600 text-white' : 'bg-slate-200 text-slate-800');
+      document.getElementById('tab-resto-rep').className = 'py-2 rounded-lg text-xs font-bold ' + (tab === 'rep' ? 'bg-blue-900 text-white' : 'bg-slate-200 text-slate-800');
+
+      if (tab !== 'refund') stopRefundScanner();
+      if (tab === 'rep' && typeof loadRestaurantReport === 'function') loadRestaurantReport();
+    }
+
+    async function stopRefundScanner() {
+      if (refundQrScanner) {
+        try { await refundQrScanner.stop(); } catch (e) {}
+        try { await refundQrScanner.clear(); } catch (e) {}
+        refundQrScanner = null;
+      }
+      refundScanPaused = false;
+      const btn = document.getElementById('btn-toggle-refund-scan');
+      if (btn) btn.textContent = 'Activer le scan de remboursement';
+    }
+
+    async function toggleRefundScanner() {
+      if (refundQrScanner) {
+        await stopRefundScanner();
+        return;
+      }
+      refundQrScanner = new Html5Qrcode('qr-refund-reader');
+      document.getElementById('btn-toggle-refund-scan').textContent = 'Arrêter le scan de remboursement';
+      refundQrScanner.start(
+        { facingMode: 'environment' },
+        { fps: 15, qrbox: { width: 220, height: 220 } },
+        async (decodedText) => {
+          if (refundScanPaused) return;
+          refundScanPaused = true;
+          await processRefundQrScan(decodedText);
+          setTimeout(() => { refundScanPaused = false; }, 1200);
+        }
+      ).catch(err => {
+        alert('Caméra inaccessible : ' + err);
+        stopRefundScanner();
+      });
+    }
+
+    async function processRefundQrScan(qrValue) {
+      const box = document.getElementById('resto-refund-result');
+      box.classList.remove('hidden');
+      box.className = 'p-3 rounded-lg text-xs font-semibold bg-slate-100 text-slate-800';
+      box.textContent = 'Vérification du débit du jour...';
+
+      const res = await callApi('refund_meal_by_qr', {
+        restaurant_code: currentUser.restaurant_code,
+        qr_value: qrValue
+      });
+
+      if (res.success) {
+        box.className = 'p-3 rounded-lg text-xs font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200';
+        box.textContent = 'Remboursé (+1 crédit) : ' + res.employee_name + ' (' + res.company_code + ' • ' + res.matricule + ') — Nouveau solde : ' + res.new_credits + ' crédit(s).';
+      } else {
+        box.className = 'p-3 rounded-lg text-xs font-semibold bg-red-50 text-red-700 border border-red-200';
+        box.textContent = res.message || 'Remboursement refusé.';
+      }
+    }
+
+    function renderMealSummary(items, prefix) {
+      let served = 0;
+      let refunded = 0;
+      (items || []).forEach(it => {
+        const st = String(it.status || '').toUpperCase();
+        if (st === 'REMBOURSÉ' || st === 'REMBOURSE') refunded++;
+        else served++;
+      });
+      const net = served - refunded;
+      const sEl = document.getElementById(prefix + '-rep-served');
+      const rEl = document.getElementById(prefix + '-rep-refunded');
+      const nEl = document.getElementById(prefix + '-rep-net');
+      if (sEl) sEl.textContent = served;
+      if (rEl) rEl.textContent = refunded;
+      if (nEl) nEl.textContent = net;
+    }
+
+    async function switchCompTab(tab) {
+      document.getElementById('comp-panel-emp').classList.toggle('hidden', tab !== 'emp');
+      document.getElementById('comp-panel-rech').classList.toggle('hidden', tab !== 'rech');
+      document.getElementById('comp-panel-rep').classList.toggle('hidden', tab !== 'rep');
+      document.getElementById('comp-panel-rchr').classList.toggle('hidden', tab !== 'rchr');
+
+      ['emp', 'rech', 'rep', 'rchr'].forEach(k => {
+        const el = document.getElementById('tab-comp-' + k);
+        if (el) el.className = 'py-2 rounded-lg text-[11px] font-bold ' + (tab === k ? 'bg-blue-900 text-white' : 'bg-slate-200 text-slate-800');
+      });
+
+      if (tab === 'rep' && typeof loadCompanyData === 'function') loadCompanyData();
+      if (tab === 'rchr') await loadCompanyRechargesReport();
+    }
+
+    async function loadCompanyRechargesReport() {
+      const res = await callApi('get_company_recharges', {
+        company_code: currentUser.company_code
+      });
+      const listEl = document.getElementById('comp-recharges-list');
+      const totalEl = document.getElementById('comp-recharges-total');
+      if (!res.success) {
+        listEl.innerHTML = '<p class="text-red-600">' + (res.message || 'Erreur chargement recharges') + '</p>';
+        return;
+      }
+      lastRechargeRows = res.items || [];
+      let total = 0;
+      lastRechargeRows.forEach(r => total += Number(r.amount || 0));
+      totalEl.textContent = total;
+
+      if (!lastRechargeRows.length) {
+        listEl.innerHTML = '<p class="text-slate-500">Aucune recharge enregistrée.</p>';
+        return;
+      }
+      listEl.innerHTML = lastRechargeRows.map(r => `
+        <div class="p-2.5 rounded-lg border border-slate-200 flex items-center justify-between">
+          <div>
+            <p class="font-bold text-slate-900">${r.full_name} (${r.matricule})</p>
+            <p class="text-[11px] text-slate-500">${r.date} • ${r.time}</p>
+          </div>
+          <span class="font-bold text-emerald-700">+${r.amount} crédit(s)</span>
+        </div>
+      `).join('');
+    }
+
+    async function openSuperAdminCompanyReport(companyCode, companyName) {
+      currentSaReportCompany = { code: companyCode, name: companyName };
+      const box = document.getElementById('sa-company-report-box');
+      box.classList.remove('hidden');
+      document.getElementById('sa-rep-title').textContent = 'Rapport journalier — ' + companyName + ' (' + companyCode + ')';
+      const dateInput = document.getElementById('sa-rep-date');
+      if (!dateInput.value) {
+        dateInput.value = new Date().toISOString().slice(0, 10);
+      }
+      await reloadCurrentSuperAdminReport();
+    }
+
+    function closeSuperAdminCompanyReport() {
+      document.getElementById('sa-company-report-box').classList.add('hidden');
+    }
+
+    async function reloadCurrentSuperAdminReport() {
+      if (!currentSaReportCompany.code) return;
+      const dateVal = document.getElementById('sa-rep-date').value || new Date().toISOString().slice(0, 10);
+      const res = await callApi('get_company_data', {
+        company_code: currentSaReportCompany.code,
+        date: dateVal
+      });
+      const listEl = document.getElementById('sa-rep-list');
+      if (!res.success) {
+        listEl.innerHTML = '<p class="text-red-600">' + (res.message || 'Erreur rapport société') + '</p>';
+        return;
+      }
+      const rows = res.consumptions || [];
+      lastReportRows.sa = rows;
+      renderMealSummary(rows, 'sa');
+      if (!rows.length) {
+        listEl.innerHTML = '<p class="text-slate-500">Aucune consommation pour cette date.</p>';
+        return;
+      }
+      listEl.innerHTML = rows.map(c => `
+        <div class="p-2.5 rounded-lg border border-slate-200 flex items-center justify-between">
+          <div>
+            <p class="font-bold text-slate-900">${c.full_name} (${c.matricule})</p>
+            <p class="text-[11px] text-slate-500">${c.date} • ${c.time} • Resto : ${c.restaurant_code}</p>
+          </div>
+          <span class="text-[11px] font-bold ${c.status === 'REMBOURSÉ' ? 'text-amber-700' : 'text-emerald-700'}">${c.status}</span>
+        </div>
+      `).join('');
+    }
+
+    function downloadReportCsv(scope) {
+      const rows = lastReportRows[scope] || [];
+      const csvLines = ['Matricule,Nom,Restaurant,Date,Heure,Statut'];
+      rows.forEach(r => {
+        csvLines.push([r.matricule, r.full_name, r.restaurant_code || '', r.date, r.time, r.status].map(v => `"${String(v || '').replace(/"/g, '""')}"`).join(','));
+      });
+      const blob = new Blob([csvLines.join('\n')], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'rapport-journalier-' + scope + '.csv';
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function downloadRechargesCsv() {
+      const csvLines = ['Matricule,Nom,Credits,Date,Heure'];
+      (lastRechargeRows || []).forEach(r => {
+        csvLines.push([r.matricule, r.full_name, r.amount, r.date, r.time].map(v => `"${String(v || '').replace(/"/g, '""')}"`).join(','));
+      });
+      const blob = new Blob([csvLines.join('\n')], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'rapport-recharges.csv';
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function printReportSection(elementId, title) {
+      const el = document.getElementById(elementId);
+      if (!el) return;
+      const win = window.open('', '_blank', 'width=600,height=700');
+      win.document.write(`
+        <html>
+          <head>
+            <title>${title}</title>
+            <style>
+              body { font-family: Arial, sans-serif; padding: 20px; color: #0f172a; }
+              h2 { margin-bottom: 14px; font-size: 18px; }
+              .item { border-bottom: 1px solid #e2e8f0; padding: 8px 0; font-size: 13px; }
+            </style>
+          </head>
+          <body>
+            <h2>${title}</h2>
+            <div>${el.innerHTML}</div>
+            <script>window.onload = function() { window.print(); };<\/script>
+          </body>
+        </html>
+      `);
+      win.document.close();
     }
   </script>
 </body>
