@@ -3,358 +3,379 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Ma Cantine — Gestion Crédits & Repas</title>
-  <link rel="manifest" href="./manifest.json" />
+  <title>Ma Cantine — Gestion Cantine Entreprise</title>
+  <link rel="manifest" href="manifest.json" />
   <meta name="theme-color" content="#1e3a8a" />
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <script src="https://unpkg.com/html5-qrcode"></script>
 </head>
-<body class="bg-slate-100 text-slate-800 min-h-screen">
+<body class="bg-slate-100 text-slate-900 min-h-screen">
 
-  <!-- En-tête -->
-  <header class="bg-blue-900 text-white px-4 py-3 shadow flex items-center justify-between">
-    <div>
-      <h1 class="text-lg font-bold tracking-tight">Ma Cantine</h1>
-      <p id="header-subtitle" class="text-xs text-blue-200">Gestion des crédits & repas</p>
+  <!-- EN-TÊTE -->
+  <header class="bg-blue-900 text-white px-4 py-3 shadow-md sticky top-0 z-30">
+    <div class="max-w-xl mx-auto flex items-center justify-between">
+      <div>
+        <h1 class="text-base font-extrabold tracking-wide">MA CANTINE</h1>
+        <p id="header-subtitle" class="text-[11px] text-blue-200">Gestion repas & crédits employés</p>
+      </div>
+      <button id="btn-logout" onclick="logout()" class="hidden bg-blue-800 hover:bg-blue-700 text-xs font-bold px-3 py-1.5 rounded-lg">
+        Déconnexion
+      </button>
     </div>
-    <button id="btn-logout" onclick="logout()" class="hidden bg-blue-800 hover:bg-blue-700 text-xs font-semibold px-3 py-1.5 rounded-lg">
-      Déconnexion
-    </button>
   </header>
 
   <main class="max-w-xl mx-auto p-4 space-y-4">
 
-    <!-- ÉCRAN 1 : CONNEXION -->
-    <section id="view-login" class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 mt-4">
-      <h2 class="text-xl font-bold text-slate-900 mb-1">Connexion</h2>
-      <p class="text-sm text-slate-500 mb-4">Entrez votre identifiant Société, Restaurant ou Super-Admin</p>
-
-      <form onsubmit="handleLogin(event)" class="space-y-4">
+    <!-- VUE 1 : CONNEXION -->
+    <section id="view-login" class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+      <div>
+        <h2 class="text-lg font-extrabold text-slate-900">Connexion</h2>
+        <p class="text-xs text-slate-500">Entrez votre identifiant. Lors de votre première connexion, vous définirez votre code d'accès unique.</p>
+      </div>
+      <form onsubmit="handleLogin(event)" class="space-y-3">
         <div>
-          <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Identifiant</label>
-          <input id="login-username" type="text" required placeholder="Ex: admin_cimtogo ou cimcan_caisse"
-            class="w-full border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600" />
+          <label class="block text-xs font-bold text-slate-700 mb-1">Identifiant</label>
+          <input id="login-username" type="text" required placeholder="ex: superadmin, cmt_admin, resto_1"
+            class="w-full border border-slate-300 rounded-xl px-3 py-2.5 text-sm" />
         </div>
-
-        <div id="login-password-group">
-          <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Code d'accès</label>
-          <input id="login-password" type="password" placeholder="Laissez vide si 1ère connexion"
-            class="w-full border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600" />
-          <p class="text-[11px] text-slate-400 mt-1">1ère connexion ? Entrez uniquement votre identifiant et appuyez sur Continuer.</p>
+        <div id="login-password-box">
+          <label class="block text-xs font-bold text-slate-700 mb-1">Code d'accès</label>
+          <input id="login-password" type="password" placeholder="Votre code d'accès"
+            class="w-full border border-slate-300 rounded-xl px-3 py-2.5 text-sm" />
         </div>
-
         <button id="btn-login" type="submit"
-          class="w-full bg-blue-900 hover:bg-blue-800 text-white font-bold py-3 rounded-xl text-sm transition">
-          Continuer / Se connecter
+          class="w-full bg-blue-900 hover:bg-blue-800 text-white font-bold py-2.5 rounded-xl text-sm">
+          Se connecter
         </button>
-
-        <p id="login-error" class="hidden text-sm text-red-600 font-medium"></p>
+        <p id="login-error" class="hidden text-xs font-semibold text-red-600"></p>
       </form>
     </section>
 
-    <!-- ÉCRAN 1B : CRÉATION DU CODE D'ACCÈS UNIQUE (1ÈRE CONNEXION) -->
-    <section id="view-setup-code" class="hidden bg-white p-6 rounded-2xl shadow-sm border border-blue-200 mt-4">
-      <div class="inline-block bg-blue-100 text-blue-900 text-xs font-bold px-2.5 py-1 rounded-full mb-2">
-        Activation du compte
+    <!-- VUE 2 : PREMIÈRE CONNEXION (CRÉATION DU CODE D'ACCÈS UNIQUE) -->
+    <section id="view-setup-code" class="hidden bg-white p-5 rounded-2xl border border-blue-200 shadow-sm space-y-4">
+      <div>
+        <span class="inline-block text-[11px] font-bold bg-blue-100 text-blue-900 px-2.5 py-0.5 rounded-full mb-1">Première connexion</span>
+        <h2 class="text-lg font-extrabold text-slate-900">Définir votre code d'accès</h2>
+        <p id="setup-welcome-text" class="text-xs text-slate-600"></p>
       </div>
-      <h2 class="text-xl font-bold text-slate-900 mb-1">Créer votre code d'accès unique</h2>
-      <p id="setup-welcome" class="text-sm text-slate-600 mb-4"></p>
-
-      <form onsubmit="handleSetupCode(event)" class="space-y-4">
+      <form onsubmit="handleSetupCode(event)" class="space-y-3">
         <div>
-          <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Choisissez votre code d'accès (min. 4 caractères)</label>
-          <input id="setup-code-1" type="password" required minlength="4" placeholder="Ex: 2026 ou votre code secret"
-            class="w-full border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600" />
+          <label class="block text-xs font-bold text-slate-700 mb-1">Nouveau code d'accès (min. 4 caractères)</label>
+          <input id="setup-code-1" type="password" required minlength="4" placeholder="Ex: 1234 ou mot de passe"
+            class="w-full border border-slate-300 rounded-xl px-3 py-2.5 text-sm" />
         </div>
-
         <div>
-          <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Confirmez votre code d'accès</label>
-          <input id="setup-code-2" type="password" required minlength="4" placeholder="Répétez le même code"
-            class="w-full border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600" />
+          <label class="block text-xs font-bold text-slate-700 mb-1">Confirmer le code d'accès</label>
+          <input id="setup-code-2" type="password" required minlength="4" placeholder="Répétez votre code"
+            class="w-full border border-slate-300 rounded-xl px-3 py-2.5 text-sm" />
         </div>
-
         <button id="btn-setup-code" type="submit"
-          class="w-full bg-emerald-700 hover:bg-emerald-600 text-white font-bold py-3 rounded-xl text-sm transition">
+          class="w-full bg-blue-900 hover:bg-blue-800 text-white font-bold py-2.5 rounded-xl text-sm">
           Enregistrer mon code et entrer
         </button>
-
-        <button type="button" onclick="cancelSetup()" class="w-full text-xs text-slate-500 underline">
+        <button type="button" onclick="cancelSetup()"
+          class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2 rounded-xl text-xs">
           Retour à la connexion
         </button>
-
-        <p id="setup-error" class="hidden text-sm text-red-600 font-medium"></p>
+        <p id="setup-error" class="hidden text-xs font-semibold text-red-600"></p>
       </form>
     </section>
 
-    <!-- ÉCRAN 2 : ESPACE SUPER-ADMIN (TOI) -->
+    <!-- VUE 3 : SUPER-ADMIN -->
     <section id="view-superadmin" class="hidden space-y-4">
-      <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
-        <h2 class="text-base font-bold text-slate-900 mb-1">Créer un Client (Société + Restaurant)</h2>
-        <p class="text-xs text-slate-500 mb-4">Tu définis les 2 identifiants. La société et son restaurant créeront eux-mêmes leur code d'accès unique à leur première connexion.</p>
-
-        <form onsubmit="handleAdminCreateClient(event)" class="space-y-3">
-          <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-2">
-            <p class="text-xs font-bold uppercase text-blue-900">1. La Société Cliente</p>
+      <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+        <h2 class="text-base font-extrabold text-slate-900">Créer une Société Cliente & son Restaurant</h2>
+        <form onsubmit="handleCreateClient(event)" class="space-y-2.5">
+          <div class="grid grid-cols-2 gap-2">
             <input id="sa-comp-code" type="text" required placeholder="Code Société (ex: CIMTOGO)"
-              class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm uppercase" />
-            <input id="sa-comp-name" type="text" required placeholder="Nom de la Société (ex: CIMTOGO SA)"
-              class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm" />
-            <input id="sa-comp-user" type="text" required placeholder="Identifiant Société (ex: admin_cimtogo)"
-              class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm lowercase" />
+              class="border border-slate-300 rounded-lg px-3 py-2 text-sm uppercase" />
+            <input id="sa-comp-name" type="text" required placeholder="Nom Société"
+              class="border border-slate-300 rounded-lg px-3 py-2 text-sm" />
           </div>
+          <input id="sa-comp-user" type="text" required placeholder="Identifiant Société (ex: cmt_admin)"
+            class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm lowercase" />
 
-          <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-2">
-            <p class="text-xs font-bold uppercase text-emerald-800">2. Son Restaurant</p>
-            <input id="sa-rest-code" type="text" required placeholder="Code Restaurant (ex: cimcan)"
-              class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm lowercase" />
-            <input id="sa-rest-name" type="text" required placeholder="Nom du Restaurant (ex: Cantine CIMTOGO)"
-              class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm" />
-            <input id="sa-rest-user" type="text" required placeholder="Identifiant Restaurant (ex: cimcan_caisse)"
-              class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm lowercase" />
+          <div class="grid grid-cols-2 gap-2 pt-1">
+            <input id="sa-rest-code" type="text" required placeholder="Code Resto (ex: resto_1)"
+              class="border border-slate-300 rounded-lg px-3 py-2 text-sm lowercase" />
+            <input id="sa-rest-name" type="text" required placeholder="Nom Restaurant"
+              class="border border-slate-300 rounded-lg px-3 py-2 text-sm" />
           </div>
+          <input id="sa-rest-user" type="text" required placeholder="Identifiant Resto (ex: resto_1_op)"
+            class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm lowercase" />
 
-          <button id="btn-sa-create" type="submit"
-            class="w-full bg-blue-900 hover:bg-blue-800 text-white font-bold py-3 rounded-xl text-sm">
-            + Créer la Société, le Restaurant & leurs 2 identifiants
+          <button type="submit"
+            class="w-full bg-blue-900 hover:bg-blue-800 text-white font-bold py-2.5 rounded-xl text-xs">
+            Créer la société et le restaurant
           </button>
-          <p id="sa-feedback" class="hidden text-sm font-medium"></p>
+          <p id="sa-create-msg" class="hidden text-xs font-semibold"></p>
         </form>
       </div>
 
-      <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
-        <div class="flex items-center justify-between mb-3">
-          <h3 class="text-sm font-bold text-slate-900">Clients & État des codes d'accès</h3>
-          <button onclick="loadSuperAdminClients()" class="text-xs bg-slate-100 px-2.5 py-1 rounded-lg font-semibold">Actualiser</button>
+      <!-- Liste des Sociétés & Restaurants -->
+      <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+        <div class="flex items-center justify-between">
+          <h3 class="text-sm font-extrabold text-slate-900">Sociétés & Restaurants enregistrés</h3>
+          <button type="button" onclick="loadSuperAdminClients()" class="text-xs text-blue-800 font-bold underline">Actualiser</button>
         </div>
-        <div id="sa-clients-list" class="space-y-2 text-sm"></div>
-     </div>
-      <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
-     <h3 class="text-sm font-bold text-slate-900 mb-2">Modifier mon identifiant Super-Admin</h3>
-     <form onsubmit="handleUpdateMyAdminUsername(event)" class="space-y-2">
-       <input id="sa-new-username" type="text" required minlength="3" placeholder="Nouvel identifiant Super-Admin" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm lowercase" />
-       <button type="submit" class="w-full bg-blue-900 hover:bg-blue-800 text-white font-bold py-2 rounded-lg text-xs">Enregistrer mon identifiant</button>
-       <p id="sa-user-msg" class="hidden text-xs font-semibold"></p>
-     </form>
-   </div>
-      <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
-     <h3 class="text-sm font-bold text-slate-900 mb-2">Modifier mon code d'accès</h3>
-     <form onsubmit="handleChangeAccessCode(event, 'sa')" class="space-y-2">
-       <input id="sa-old-code" type="password" required placeholder="Ancien code d'accès" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm" />
-       <input id="sa-new-code" type="password" required minlength="4" placeholder="Nouveau code d'accès (min. 4 car.)" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm" />
-       <button type="submit" class="w-full bg-slate-800 hover:bg-slate-700 text-white font-bold py-2 rounded-lg text-xs">Mettre à jour mon code</button>
-       <p id="sa-code-msg" class="hidden text-xs font-semibold"></p>
-     </form>
-   </div>
+        <div id="sa-clients-list" class="space-y-2.5 text-sm"></div>
+      </div>
+
+      <!-- Rapport journalier par société (Super-Admin) -->
       <div id="sa-company-report-box" class="hidden bg-white p-4 rounded-2xl border border-blue-200 shadow-sm space-y-3">
-      <div class="flex items-center justify-between">
-        <h3 id="sa-rep-title" class="text-sm font-bold text-slate-900">Rapport société</h3>
-        <button type="button" onclick="closeSuperAdminCompanyReport()" class="text-xs text-slate-500 underline">Fermer</button>
+        <div class="flex items-center justify-between">
+          <h3 id="sa-rep-title" class="text-sm font-extrabold text-slate-900">Rapport société</h3>
+          <button type="button" onclick="closeSuperAdminCompanyReport()" class="text-xs text-slate-500 underline">Fermer</button>
+        </div>
+        <input id="sa-rep-date" type="date" onchange="reloadCurrentSuperAdminReport()"
+          class="w-full border border-slate-300 rounded-lg px-3 py-1.5 text-xs" />
+        <div class="grid grid-cols-3 gap-2 text-center bg-slate-50 p-2.5 rounded-lg border border-slate-200 text-xs">
+          <div><span class="block text-slate-500">Servis</span><strong id="sa-rep-served" class="text-slate-900">0</strong></div>
+          <div><span class="block text-slate-500">Remboursés</span><strong id="sa-rep-refunded" class="text-amber-700">0</strong></div>
+          <div><span class="block text-slate-500">Net</span><strong id="sa-rep-net" class="text-emerald-700">0</strong></div>
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <button type="button" onclick="downloadReportCsv('sa')" class="bg-slate-800 hover:bg-slate-700 text-white font-bold py-2 rounded-lg text-xs">Télécharger</button>
+          <button type="button" onclick="printReportSection('sa-report-printable', document.getElementById('sa-rep-title').textContent)" class="bg-blue-900 hover:bg-blue-800 text-white font-bold py-2 rounded-lg text-xs">Imprimer</button>
+        </div>
+        <div id="sa-report-printable" class="space-y-2">
+          <div id="sa-rep-list" class="space-y-2 text-xs"></div>
+        </div>
       </div>
-      <input id="sa-rep-date" type="date" onchange="reloadCurrentSuperAdminReport()" class="w-full border border-slate-300 rounded-lg px-3 py-1.5 text-xs" />
-      <div class="grid grid-cols-3 gap-2 text-center bg-slate-50 p-2.5 rounded-lg border border-slate-200 text-xs">
-        <div><span class="block text-slate-500">Servis</span><strong id="sa-rep-served" class="text-slate-900">0</strong></div>
-        <div><span class="block text-slate-500">Remboursés</span><strong id="sa-rep-refunded" class="text-amber-700">0</strong></div>
-        <div><span class="block text-slate-500">Net</span><strong id="sa-rep-net" class="text-emerald-700">0</strong></div>
+
+      <!-- Modifier mon identifiant Super-Admin -->
+      <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+        <h3 class="text-sm font-bold text-slate-900 mb-2">Modifier mon identifiant Super-Admin</h3>
+        <form onsubmit="handleUpdateMyAdminUsername(event)" class="space-y-2">
+          <input id="sa-new-username" type="text" required minlength="3" placeholder="Nouvel identifiant Super-Admin"
+            class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm lowercase" />
+          <button type="submit" class="w-full bg-blue-900 hover:bg-blue-800 text-white font-bold py-2 rounded-lg text-xs">
+            Enregistrer mon identifiant
+          </button>
+          <p id="sa-user-msg" class="hidden text-xs font-semibold"></p>
+        </form>
       </div>
-      <div class="grid grid-cols-2 gap-2">
-        <button type="button" onclick="downloadReportCsv('sa')" class="bg-slate-800 hover:bg-slate-700 text-white font-bold py-2 rounded-lg text-xs">Télécharger</button>
-        <button type="button" onclick="printReportSection('sa-report-printable', document.getElementById('sa-rep-title').textContent)" class="bg-blue-900 hover:bg-blue-800 text-white font-bold py-2 rounded-lg text-xs">Imprimer</button>
+
+      <!-- Modifier mon code d'accès Super-Admin -->
+      <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+        <h3 class="text-sm font-bold text-slate-900 mb-2">Modifier mon code d'accès</h3>
+        <form onsubmit="handleChangeAccessCode(event, 'sa')" class="space-y-2">
+          <input id="sa-old-code" type="password" required placeholder="Ancien code d'accès"
+            class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm" />
+          <input id="sa-new-code" type="password" required minlength="4" placeholder="Nouveau code d'accès (min. 4 car.)"
+            class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm" />
+          <button type="submit" class="w-full bg-slate-800 hover:bg-slate-700 text-white font-bold py-2 rounded-lg text-xs">
+            Mettre à jour mon code
+          </button>
+          <p id="sa-code-msg" class="hidden text-xs font-semibold"></p>
+        </form>
       </div>
-      <div id="sa-report-printable" class="space-y-2">
-        <div id="sa-rep-list" class="space-y-2 text-xs"></div>
-      </div>
-    </div>
     </section>
 
-    <!-- ÉCRAN 3 : ESPACE SOCIÉTÉ -->
+    <!-- VUE 4 : SOCIÉTÉ -->
     <section id="view-company" class="hidden space-y-4">
-      <div class="grid grid-cols-3 gap-2 bg-white p-1.5 rounded-xl border border-slate-200">
-        <button onclick="switchCompanyTab('emp')" id="tab-comp-emp" class="py-2 rounded-lg text-xs font-bold bg-blue-900 text-white">Employés & QR</button>
-        <button onclick="switchCompanyTab('rech')" id="tab-comp-rech" class="py-2 rounded-lg text-xs font-bold text-slate-600">Recharger</button>
-        <button onclick="switchCompanyTab('rep')" id="tab-comp-rep" class="py-2 rounded-lg text-xs font-bold text-slate-600">Suivi Repas</button>
+      <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+        <h2 id="comp-title" class="text-base font-extrabold text-slate-900">Espace Société</h2>
+        <p id="comp-subtitle" class="text-xs text-slate-500"></p>
       </div>
 
-      <!-- Onglet Employés & QR -->
-      <div id="comp-panel-emp" class="space-y-4">
-        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-          <h3 class="font-bold text-sm mb-3">Nouvel Employé</h3>
-          <form onsubmit="handleCreateEmployee(event)" class="space-y-2">
-            <input id="emp-matricule" type="text" required placeholder="Matricule (ex: CIM001)" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm uppercase" />
-            <input id="emp-fullname" type="text" required placeholder="Nom & Prénoms" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm" />
-            <button type="submit" class="w-full bg-blue-900 text-white font-bold py-2.5 rounded-lg text-sm">+ Créer & Générer QR</button>
-          </form>
-        </div>
+      <!-- Onglets Société -->
+      <div class="grid grid-cols-4 gap-1.5">
+        <button type="button" onclick="switchCompTab('emp')" id="tab-comp-emp" class="py-2 rounded-lg text-[11px] font-bold bg-blue-900 text-white">Employés</button>
+        <button type="button" onclick="switchCompTab('rech')" id="tab-comp-rech" class="py-2 rounded-lg text-[11px] font-bold bg-slate-200 text-slate-800">Recharger</button>
+        <button type="button" onclick="switchCompTab('rep')" id="tab-comp-rep" class="py-2 rounded-lg text-[11px] font-bold bg-slate-200 text-slate-800">Rapport journalier</button>
+        <button type="button" onclick="switchCompTab('rchr')" id="tab-comp-rchr" class="py-2 rounded-lg text-[11px] font-bold bg-slate-200 text-slate-800">Rapport recharges</button>
+      </div>
 
-        <div id="qr-preview-card" class="hidden bg-white p-4 rounded-xl border-2 border-blue-900 text-center space-y-2">
-          <p class="text-xs font-bold uppercase text-blue-900">Badge QR Employé</p>
-          <p id="qr-emp-name" class="font-bold text-base"></p>
+      <!-- Onglet Employés -->
+      <div id="comp-panel-emp" class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-4">
+        <form onsubmit="handleCreateEmployee(event)" class="space-y-2">
+          <h3 class="text-sm font-bold text-slate-900">Ajouter un employé</h3>
+          <div class="grid grid-cols-2 gap-2">
+            <input id="emp-matricule" type="text" required placeholder="Matricule (ex: EMP01)"
+              class="border border-slate-300 rounded-lg px-3 py-2 text-sm uppercase" />
+            <input id="emp-name" type="text" required placeholder="Nom complet"
+              class="border border-slate-300 rounded-lg px-3 py-2 text-sm" />
+          </div>
+          <button type="submit" class="w-full bg-blue-900 hover:bg-blue-800 text-white font-bold py-2 rounded-lg text-xs">
+            Créer l'employé & générer QR
+          </button>
+          <p id="emp-create-msg" class="hidden text-xs font-semibold"></p>
+        </form>
+
+        <!-- Badge QR -->
+        <div id="qr-preview-card" class="hidden border border-slate-200 rounded-xl p-3 bg-slate-50 text-center space-y-2">
+          <p id="qr-emp-name" class="text-sm font-extrabold text-slate-900"></p>
           <p id="qr-emp-mat" class="text-xs text-slate-500"></p>
           <div id="qrcode-box" class="flex justify-center py-2"></div>
-     <button type="button" onclick="printQrBadge()"
-       class="w-full bg-blue-900 hover:bg-blue-800 text-white font-bold py-2 rounded-lg text-xs">
-       Imprimer QR
-     </button>
-   </div>
-
+          <button type="button" onclick="printQrBadge()"
+            class="w-full bg-blue-900 hover:bg-blue-800 text-white font-bold py-2 rounded-lg text-xs">
+            Imprimer QR
+          </button>
         </div>
 
-        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-          <h3 class="font-bold text-sm mb-2">Liste des Employés</h3>
-          <div id="comp-emp-list" class="divide-y divide-slate-100 text-sm"></div>
+        <div class="space-y-2">
+          <h4 class="text-xs font-bold text-slate-700 uppercase">Liste des employés</h4>
+          <div id="comp-employees-list" class="space-y-2 text-xs"></div>
         </div>
       </div>
 
-      <!-- Onglet Recharger -->
-      <div id="comp-panel-rech" class="hidden bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-        <h3 class="font-bold text-sm mb-3">Recharger des crédits repas</h3>
-        <form onsubmit="handleRecharge(event)" class="space-y-3">
-          <input id="rech-matricule" type="text" required placeholder="Matricule employé (ex: CIM001)" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm uppercase" />
-          <input id="rech-amount" type="number" min="1" required placeholder="Nombre de crédits (ex: 10)" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm" />
-          <button type="submit" class="w-full bg-emerald-700 text-white font-bold py-2.5 rounded-lg text-sm">Valider la recharge</button>
-          <p id="rech-feedback" class="hidden text-sm font-medium"></p>
+      <!-- Onglet Recharger (sans champ Note) -->
+      <div id="comp-panel-rech" class="hidden bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-3">
+        <h3 class="text-sm font-bold text-slate-900">Recharger des crédits repas</h3>
+        <form onsubmit="handleRecharge(event)" class="space-y-2.5">
+          <input id="rech-matricule" type="text" required placeholder="Matricule employé (ex: EMP01)"
+            class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm uppercase" />
+          <input id="rech-amount" type="number" min="1" required placeholder="Nombre de crédits (ex: 10)"
+            class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm" />
+          <button type="submit" class="w-full bg-emerald-700 hover:bg-emerald-600 text-white font-bold py-2.5 rounded-lg text-xs">
+            Valider la recharge
+          </button>
+          <p id="rech-msg" class="hidden text-xs font-semibold"></p>
         </form>
       </div>
 
-      <!-- Onglet Suivi Repas -->
-      <div id="comp-panel-rep" class="hidden space-y-3">
-        <div class="bg-white p-4 rounded-xl border border-slate-200 flex gap-2 items-end">
-          <div class="flex-1">
-            <label class="block text-xs font-semibold mb-1">Date</label>
-            <input id="comp-report-date" type="date" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm" />
-          </div>
-          <button onclick="loadCompanyData()" class="bg-blue-900 text-white px-4 py-2 rounded-lg text-sm font-bold">Voir</button>
+      <!-- Onglet Rapport journalier Société -->
+      <div id="comp-panel-rep" class="hidden bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-3">
+        <div class="flex items-center justify-between">
+          <h3 class="text-sm font-bold text-slate-900">Rapport journalier</h3>
+          <input id="comp-rep-date" type="date" onchange="loadCompanyData()"
+            class="border border-slate-300 rounded-lg px-2 py-1 text-xs" />
         </div>
-        <div class="bg-white p-4 rounded-xl border border-slate-200">
-          <h3 class="font-bold text-sm mb-2">Repas consommés</h3>
-          <div class="grid grid-cols-3 gap-2 text-center bg-slate-50 p-2.5 rounded-lg border border-slate-200 text-xs">
-        <div><span class="block text-slate-500">Servis</span><strong id="comp-rep-served" class="text-slate-900">0</strong></div>
-        <div><span class="block text-slate-500">Remboursés</span><strong id="comp-rep-refunded" class="text-amber-700">0</strong></div>
-        <div><span class="block text-slate-500">Net</span><strong id="comp-rep-net" class="text-emerald-700">0</strong></div>
-      </div>
-      <div class="grid grid-cols-2 gap-2">
-        <button type="button" onclick="downloadReportCsv('comp')" class="bg-slate-800 hover:bg-slate-700 text-white font-bold py-2 rounded-lg text-xs">Télécharger</button>
-        <button type="button" onclick="printReportSection('comp-report-printable', 'Rapport journalier société')" class="bg-blue-900 hover:bg-blue-800 text-white font-bold py-2 rounded-lg text-xs">Imprimer</button>
-      </div>
-      <div id="comp-report-printable" class="space-y-2">
-          <div id="comp-cons-list" class="divide-y divide-slate-100 text-sm"></div>
+        <div class="grid grid-cols-3 gap-2 text-center bg-slate-50 p-2.5 rounded-lg border border-slate-200 text-xs">
+          <div><span class="block text-slate-500">Servis</span><strong id="comp-rep-served" class="text-slate-900">0</strong></div>
+          <div><span class="block text-slate-500">Remboursés</span><strong id="comp-rep-refunded" class="text-amber-700">0</strong></div>
+          <div><span class="block text-slate-500">Net</span><strong id="comp-rep-net" class="text-emerald-700">0</strong></div>
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <button type="button" onclick="downloadReportCsv('comp')" class="bg-slate-800 hover:bg-slate-700 text-white font-bold py-2 rounded-lg text-xs">Télécharger</button>
+          <button type="button" onclick="printReportSection('comp-report-printable', 'Rapport journalier société')" class="bg-blue-900 hover:bg-blue-800 text-white font-bold py-2 rounded-lg text-xs">Imprimer</button>
+        </div>
+        <div id="comp-report-printable" class="space-y-2">
+          <div id="comp-report-list" class="space-y-2 text-xs"></div>
         </div>
       </div>
+
+      <!-- Onglet Rapport des recharges Société -->
+      <div id="comp-panel-rchr" class="hidden bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-3">
+        <div class="flex items-center justify-between">
+          <h3 class="text-sm font-bold text-slate-900">Rapport des recharges (crédits)</h3>
+          <span class="text-xs font-bold text-emerald-700">Total : <span id="comp-recharges-total">0</span> crédits</span>
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <button type="button" onclick="downloadRechargesCsv()" class="bg-slate-800 hover:bg-slate-700 text-white font-bold py-2 rounded-lg text-xs">Télécharger</button>
+          <button type="button" onclick="printReportSection('comp-recharges-printable', 'Rapport des recharges')" class="bg-blue-900 hover:bg-blue-800 text-white font-bold py-2 rounded-lg text-xs">Imprimer</button>
+        </div>
+        <div id="comp-recharges-printable" class="space-y-2">
+          <div id="comp-recharges-list" class="space-y-2 text-xs"></div>
+        </div>
+      </div>
+
+      <!-- Modifier mon code d'accès Société -->
       <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-     <h3 class="text-sm font-bold text-slate-900 mb-2">Modifier mon code d'accès</h3>
-     <form onsubmit="handleChangeAccessCode(event, 'comp')" class="space-y-2">
-       <input id="comp-old-code" type="password" required placeholder="Ancien code d'accès" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm" />
-       <input id="comp-new-code" type="password" required minlength="4" placeholder="Nouveau code d'accès (min. 4 car.)" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm" />
-       <button type="submit" class="w-full bg-slate-800 hover:bg-slate-700 text-white font-bold py-2 rounded-lg text-xs">Mettre à jour mon code</button>
-       <p id="comp-code-msg" class="hidden text-xs font-semibold"></p>
-     </form>
-   </div>
-        <div id="comp-panel-rchr" class="hidden bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-3">
-      <div class="flex items-center justify-between">
-        <p class="text-xs font-bold text-slate-800">Rapport des recharges (crédits)</p>
-        <span class="text-xs font-bold text-emerald-700">Total : <span id="comp-recharges-total">0</span> crédits</span>
+        <h3 class="text-sm font-bold text-slate-900 mb-2">Modifier mon code d'accès</h3>
+        <form onsubmit="handleChangeAccessCode(event, 'comp')" class="space-y-2">
+          <input id="comp-old-code" type="password" required placeholder="Ancien code d'accès"
+            class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm" />
+          <input id="comp-new-code" type="password" required minlength="4" placeholder="Nouveau code d'accès (min. 4 car.)"
+            class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm" />
+          <button type="submit" class="w-full bg-slate-800 hover:bg-slate-700 text-white font-bold py-2 rounded-lg text-xs">
+            Mettre à jour mon code
+          </button>
+          <p id="comp-code-msg" class="hidden text-xs font-semibold"></p>
+        </form>
       </div>
-      <div class="grid grid-cols-2 gap-2">
-        <button type="button" onclick="downloadRechargesCsv()" class="bg-slate-800 hover:bg-slate-700 text-white font-bold py-2 rounded-lg text-xs">Télécharger</button>
-        <button type="button" onclick="printReportSection('comp-recharges-printable', 'Rapport des recharges')" class="bg-blue-900 hover:bg-blue-800 text-white font-bold py-2 rounded-lg text-xs">Imprimer</button>
-      </div>
-      <div id="comp-recharges-printable" class="space-y-2">
-        <div id="comp-recharges-list" class="space-y-2 text-xs"></div>
-      </div>
-    </div>
     </section>
 
-    <!-- ÉCRAN 4 : ESPACE RESTAURANT -->
+    <!-- VUE 5 : RESTAURANT -->
     <section id="view-restaurant" class="hidden space-y-4">
-      <div class="grid grid-cols-2 gap-2 bg-white p-1.5 rounded-xl border border-slate-200">
-        <div class="grid grid-cols-3 gap-2">
-      <button onclick="switchRestoTab('scan')" id="tab-resto-scan" class="py-2 rounded-lg text-xs font-bold bg-blue-900 text-white">Démarrer le scan</button>
-      <button onclick="switchRestoTab('refund')" id="tab-resto-refund" class="py-2 rounded-lg text-xs font-bold bg-slate-200 text-slate-800">Remboursement</button>
-      <button onclick="switchRestoTab('rep')" id="tab-resto-rep" class="py-2 rounded-lg text-xs font-bold bg-slate-200 text-slate-800">Rapport</button>
-      </div>
-
-      <!-- Onglet Scan -->
-      <div id="resto-panel-scan" class="space-y-4">
-        <div class="bg-white p-4 rounded-xl border border-slate-200 text-center space-y-3">
-          <button id="btn-start-scan" onclick="startQrScanner()" class="w-full bg-blue-900 text-white font-bold py-3 rounded-xl text-sm">
-            Démarrer la caméra QR
-          </button>
-          <div id="qr-reader" class="mx-auto max-w-xs overflow-hidden rounded-lg"></div>
-          <p class="text-xs text-slate-500">Mode boucle actif : chaque scan valide 1 plat (-1 crédit).</p>
-        </div>
-        <div id="resto-panel-refund" class="hidden bg-white p-4 rounded-xl border border-amber-300 shadow-sm space-y-3">
-      <p class="text-xs font-bold text-amber-900">Scan QR en mode Remboursement (+1 crédit)</p>
-      <p class="text-[11px] text-slate-600">Scannez le badge de l’employé : l’application vérifie qu’il a bien été débité aujourd’hui dans ce restaurant avant de créditer +1.</p>
-      <button type="button" onclick="toggleRefundScanner()" id="btn-toggle-refund-scan" class="w-full bg-amber-600 hover:bg-amber-700 text-white font-bold py-2.5 rounded-lg text-xs">
-        Activer le scan de remboursement
-      </button>
-      <div id="qr-refund-reader" class="w-full rounded-lg overflow-hidden"></div>
-      <div id="resto-refund-result" class="hidden p-3 rounded-lg text-xs font-semibold"></div>
-    </div>
-
-        <div id="scan-feedback" class="hidden p-4 rounded-xl border-2 text-center shadow-sm">
-          <p id="scan-status-title" class="font-extrabold text-lg"></p>
-          <p id="scan-status-detail" class="text-sm mt-1"></p>
-          <p id="scan-status-balance" class="text-base font-bold mt-1"></p>
-        </div>
-      </div>
-
-      <!-- Onglet Rapport & Remboursement -->
-      <div id="resto-panel-report" class="hidden space-y-4">
-        <div class="bg-white p-4 rounded-xl border border-slate-200 flex gap-2 items-end">
-          <div class="flex-1">
-            <label class="block text-xs font-semibold mb-1">Date</label>
-            <input id="resto-report-date" type="date" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm" />
-          </div>
-          <button onclick="loadRestaurantReport()" class="bg-blue-900 text-white px-4 py-2 rounded-lg text-sm font-bold">Actualiser</button>
-        </div>
-
-        <div id="resto-report-summary" class="grid grid-cols-2 gap-3"></div>
-
-        <div class="bg-white p-4 rounded-xl border border-slate-200">
-          <h4 class="font-bold text-sm mb-1">Plats enregistrés</h4>
-          <p class="text-xs text-slate-500 mb-3">Remboursement (+1 crédit) possible uniquement le jour même (ex: plat fini).</p>
-          <div id="resto-report-summary" class="grid grid-cols-3 gap-2 text-center bg-slate-50 p-2.5 rounded-lg border border-slate-200 text-xs">
-        <div><span class="block text-slate-500">Servis</span><strong id="resto-rep-served" class="text-slate-900">0</strong></div>
-        <div><span class="block text-slate-500">Remboursés</span><strong id="resto-rep-refunded" class="text-amber-700">0</strong></div>
-        <div><span class="block text-slate-500">Net</span><strong id="resto-rep-net" class="text-emerald-700">0</strong></div>
-      </div>
-      <div class="grid grid-cols-2 gap-2">
-        <button type="button" onclick="downloadReportCsv('resto')" class="bg-slate-800 hover:bg-slate-700 text-white font-bold py-2 rounded-lg text-xs">Télécharger</button>
-        <button type="button" onclick="printReportSection('resto-report-printable', 'Rapport journalier restaurant')" class="bg-blue-900 hover:bg-blue-800 text-white font-bold py-2 rounded-lg text-xs">Imprimer</button>
-      </div>
-      <div id="resto-report-printable" class="space-y-2">
-          <div id="resto-report-list" class="divide-y divide-slate-100 text-sm"></div>
-        </div>
-      </div>
       <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-     <h3 class="text-sm font-bold text-slate-900 mb-2">Modifier mon code d'accès</h3>
-     <form onsubmit="handleChangeAccessCode(event, 'resto')" class="space-y-2">
-       <input id="resto-old-code" type="password" required placeholder="Ancien code d'accès" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm" />
-       <input id="resto-new-code" type="password" required minlength="4" placeholder="Nouveau code d'accès (min. 4 car.)" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm" />
-       <button type="submit" class="w-full bg-slate-800 hover:bg-slate-700 text-white font-bold py-2 rounded-lg text-xs">Mettre à jour mon code</button>
-       <p id="resto-code-msg" class="hidden text-xs font-semibold"></p>
-     </form>
-   </div>
+        <h2 id="resto-title" class="text-base font-extrabold text-slate-900">Espace Restaurant</h2>
+        <p id="resto-subtitle" class="text-xs text-slate-500"></p>
+      </div>
+
+      <!-- Onglets Restaurant -->
+      <div class="grid grid-cols-3 gap-2">
+        <button type="button" onclick="switchRestoTab('scan')" id="tab-resto-scan" class="py-2 rounded-lg text-xs font-bold bg-blue-900 text-white">Démarrer le scan</button>
+        <button type="button" onclick="switchRestoTab('refund')" id="tab-resto-refund" class="py-2 rounded-lg text-xs font-bold bg-slate-200 text-slate-800">Remboursement</button>
+        <button type="button" onclick="switchRestoTab('rep')" id="tab-resto-rep" class="py-2 rounded-lg text-xs font-bold bg-slate-200 text-slate-800">Rapport</button>
+      </div>
+
+      <!-- Scan en boucle (-1 crédit) -->
+      <div id="resto-panel-scan" class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-3">
+        <button type="button" onclick="toggleQrScanner()" id="btn-toggle-scan"
+          class="w-full bg-blue-900 hover:bg-blue-800 text-white font-bold py-2.5 rounded-lg text-xs">
+          Démarrer le scan
+        </button>
+        <div id="qr-reader" class="w-full rounded-lg overflow-hidden"></div>
+        <div id="resto-scan-result" class="hidden p-3 rounded-lg text-xs font-semibold"></div>
+      </div>
+
+      <!-- Remboursement par scan QR (+1 crédit) -->
+      <div id="resto-panel-refund" class="hidden bg-white p-4 rounded-xl border border-amber-300 shadow-sm space-y-3">
+        <p class="text-xs font-bold text-amber-900">Scan QR en mode Remboursement (+1 crédit)</p>
+        <p class="text-[11px] text-slate-600">Scannez le badge de l'employé : l'application vérifie qu'il a bien été débité aujourd'hui dans ce restaurant avant de créditer +1.</p>
+        <button type="button" onclick="toggleRefundScanner()" id="btn-toggle-refund-scan"
+          class="w-full bg-amber-600 hover:bg-amber-700 text-white font-bold py-2.5 rounded-lg text-xs">
+          Activer le scan de remboursement
+        </button>
+        <div id="qr-refund-reader" class="w-full rounded-lg overflow-hidden"></div>
+        <div id="resto-refund-result" class="hidden p-3 rounded-lg text-xs font-semibold"></div>
+      </div>
+
+      <!-- Rapport journalier Restaurant -->
+      <div id="resto-panel-rep" class="hidden bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-3">
+        <div class="flex items-center justify-between">
+          <h3 class="text-sm font-bold text-slate-900">Rapport journalier</h3>
+          <input id="resto-rep-date" type="date" onchange="loadRestaurantReport()"
+            class="border border-slate-300 rounded-lg px-2 py-1 text-xs" />
+        </div>
+        <div class="grid grid-cols-3 gap-2 text-center bg-slate-50 p-2.5 rounded-lg border border-slate-200 text-xs">
+          <div><span class="block text-slate-500">Servis</span><strong id="resto-rep-served" class="text-slate-900">0</strong></div>
+          <div><span class="block text-slate-500">Remboursés</span><strong id="resto-rep-refunded" class="text-amber-700">0</strong></div>
+          <div><span class="block text-slate-500">Net</span><strong id="resto-rep-net" class="text-emerald-700">0</strong></div>
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <button type="button" onclick="downloadReportCsv('resto')" class="bg-slate-800 hover:bg-slate-700 text-white font-bold py-2 rounded-lg text-xs">Télécharger</button>
+          <button type="button" onclick="printReportSection('resto-report-printable', 'Rapport journalier restaurant')" class="bg-blue-900 hover:bg-blue-800 text-white font-bold py-2 rounded-lg text-xs">Imprimer</button>
+        </div>
+        <div id="resto-report-printable" class="space-y-2">
+          <div id="resto-report-list" class="space-y-2 text-xs"></div>
+        </div>
+      </div>
+
+      <!-- Modifier mon code d'accès Restaurant -->
+      <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+        <h3 class="text-sm font-bold text-slate-900 mb-2">Modifier mon code d'accès</h3>
+        <form onsubmit="handleChangeAccessCode(event, 'resto')" class="space-y-2">
+          <input id="resto-old-code" type="password" required placeholder="Ancien code d'accès"
+            class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm" />
+          <input id="resto-new-code" type="password" required minlength="4" placeholder="Nouveau code d'accès (min. 4 car.)"
+            class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm" />
+          <button type="submit" class="w-full bg-slate-800 hover:bg-slate-700 text-white font-bold py-2 rounded-lg text-xs">
+            Mettre à jour mon code
+          </button>
+          <p id="resto-code-msg" class="hidden text-xs font-semibold"></p>
+        </form>
+      </div>
     </section>
 
   </main>
 
   <script>
     // 'https://script.google.com/macros/s/AKfycbynJ-B-dWs_L9sdRnN_5pacLIT31TIEgPeEAb-DpdzvwIgeddME9qexMCh10El-v0r9/exec'
-    const API_URL = 'https://script.google.com/macros/s/AKfycbynJ-B-dWs_L9sdRnN_5pacLIT31TIEgPeEAb-DpdzvwIgeddME9qexMCh10El-v0r9/exec'
+    const API_URL = 'https://script.google.com/macros/s/AKfycbynJ-B-dWs_L9sdRnN_5pacLIT31TIEgPeEAb-DpdzvwIgeddME9qexMCh10El-v0r9/exec';
+
     let currentUser = null;
     let pendingSetupUser = null;
     let html5QrCode = null;
     let scanPaused = false;
-
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('./sw.js').catch(() => {});
-    }
-
-    const todayISO = new Date().toISOString().slice(0, 10);
-    document.getElementById('comp-report-date').value = todayISO;
-    document.getElementById('resto-report-date').value = todayISO;
+    let refundQrScanner = null;
+    let refundScanPaused = false;
+    let lastReportRows = { resto: [], comp: [], sa: [] };
+    let lastRechargeRows = [];
+    let currentSaReportCompany = { code: '', name: '' };
 
     async function callApi(action, payload = {}) {
       const res = await fetch(API_URL, {
@@ -365,318 +386,376 @@
       return await res.json();
     }
 
-    function playBeep(success = true) {
-      try {
-        const ctx = new (window.AudioContext || window.webkitAudioContext)();
-        const osc = ctx.createOscillator();
-        osc.type = 'sine';
-        osc.frequency.value = success ? 880 : 240;
-        osc.connect(ctx.destination);
-        osc.start();
-        setTimeout(() => osc.stop(), success ? 150 : 350);
-      } catch (e) {}
+    function todayIso() {
+      return new Date().toISOString().slice(0, 10);
     }
 
-    // CONNEXION
+    function showSection(id) {
+      ['view-login', 'view-setup-code', 'view-superadmin', 'view-company', 'view-restaurant'].forEach(sec => {
+        document.getElementById(sec).classList.toggle('hidden', sec !== id);
+      });
+    }
+
     async function handleLogin(e) {
       e.preventDefault();
-      const btn = document.getElementById('btn-login');
       const errEl = document.getElementById('login-error');
       errEl.classList.add('hidden');
-      btn.disabled = true;
-      btn.textContent = 'Vérification...';
 
-      try {
-        const username = document.getElementById('login-username').value;
-        const password = document.getElementById('login-password').value;
-        const res = await callApi('login', { username, password });
+      const username = document.getElementById('login-username').value.trim();
+      const password = document.getElementById('login-password').value.trim();
 
-        if (!res.success) {
-          errEl.textContent = res.message || 'Erreur de connexion.';
-          errEl.classList.remove('hidden');
-          return;
-        }
-
-        // 1ère connexion : le client doit créer son code d'accès unique
-        if (res.need_setup) {
-          pendingSetupUser = res.user;
-          document.getElementById('view-login').classList.add('hidden');
-          document.getElementById('view-setup-code').classList.remove('hidden');
-          document.getElementById('setup-welcome').textContent =
-            'Bienvenue ' + (res.user.full_name || res.user.username) + ' (' + res.user.username + '). Définissez votre code d’accès personnel.';
-          return;
-        }
-
-        enterApp(res.user);
-      } catch (err) {
-        errEl.textContent = 'Erreur réseau : vérifiez votre connexion.';
+      const res = await callApi('login', { username, password });
+      if (!res.success) {
+        errEl.textContent = res.message || 'Erreur de connexion.';
         errEl.classList.remove('hidden');
-      } finally {
-        btn.disabled = false;
-        btn.textContent = 'Continuer / Se connecter';
+        return;
       }
+
+      if (res.need_setup) {
+        pendingSetupUser = res.user;
+        document.getElementById('setup-welcome-text').textContent =
+          'Compte : ' + res.user.username + (res.user.full_name ? ' (' + res.user.full_name + ')' : '');
+        document.getElementById('setup-code-1').value = '';
+        document.getElementById('setup-code-2').value = '';
+        document.getElementById('setup-error').classList.add('hidden');
+        showSection('view-setup-code');
+        return;
+      }
+
+      enterApp(res.user);
     }
 
-    // ENREGISTREMENT DU CODE D'ACCÈS UNIQUE PAR LE CLIENT
     async function handleSetupCode(e) {
       e.preventDefault();
       const errEl = document.getElementById('setup-error');
-      const btn = document.getElementById('btn-setup-code');
       errEl.classList.add('hidden');
 
       const c1 = document.getElementById('setup-code-1').value.trim();
       const c2 = document.getElementById('setup-code-2').value.trim();
-
+      if (c1.length < 4) {
+        errEl.textContent = 'Le code doit contenir au moins 4 caractères.';
+        errEl.classList.remove('hidden');
+        return;
+      }
       if (c1 !== c2) {
         errEl.textContent = 'Les deux codes ne correspondent pas.';
         errEl.classList.remove('hidden');
         return;
       }
 
-      btn.disabled = true;
-      btn.textContent = 'Enregistrement...';
-      try {
-        const res = await callApi('set_access_code', {
-          username: pendingSetupUser.username,
-          access_code: c1
-        });
-        if (!res.success) {
-          errEl.textContent = res.message;
-          errEl.classList.remove('hidden');
-          return;
-        }
-        document.getElementById('view-setup-code').classList.add('hidden');
-        enterApp(res.user);
-      } finally {
-        btn.disabled = false;
-        btn.textContent = 'Enregistrer mon code et entrer';
+      const res = await callApi('set_access_code', {
+        username: pendingSetupUser.username,
+        access_code: c1
+      });
+
+      if (!res.success) {
+        errEl.textContent = res.message || 'Erreur lors de la création du code.';
+        errEl.classList.remove('hidden');
+        return;
       }
+
+      pendingSetupUser = null;
+      enterApp(res.user);
     }
 
     function cancelSetup() {
       pendingSetupUser = null;
-      document.getElementById('view-setup-code').classList.add('hidden');
-      document.getElementById('view-login').classList.remove('hidden');
+      document.getElementById('login-password').value = '';
+      showSection('view-login');
     }
-  async function handleChangeAccessCode(e, prefix) {
-   e.preventDefault();
-   const oldInput = document.getElementById(prefix + '-old-code');
-   const newInput = document.getElementById(prefix + '-new-code');
-   const msgEl = document.getElementById(prefix + '-code-msg');
-   msgEl.classList.add('hidden');
 
-   const res = await callApi('change_access_code', {
-     username: currentUser.username,
-     old_code: oldInput.value,
-     new_code: newInput.value
-   });
-
-    async function handleUpdateMyAdminUsername(e) {
-   e.preventDefault();
-   const input = document.getElementById('sa-new-username');
-   const msgEl = document.getElementById('sa-user-msg');
-   msgEl.classList.add('hidden');
-
-   const res = await callApi('admin_update_username', {
-     target_role: 'super_admin',
-     current_username: currentUser.username,
-     new_username: input.value
-   });
-
-   msgEl.textContent = res.message;
-   msgEl.className = res.success ? 'text-xs font-semibold text-emerald-700' : 'text-xs font-semibold text-red-600';
-   msgEl.classList.remove('hidden');
-
-   if (res.success) {
-     currentUser.username = res.new_username;
-     input.value = '';
-   }
- }
-
- async function editClientUsername(targetRole, targetCode, oldUsername) {
-   const proposed = prompt('Nouvel identifiant pour ' + oldUsername + ' :', oldUsername);
-   if (!proposed || proposed.trim().toLowerCase() === oldUsername.toLowerCase()) return;
-
-   const res = await callApi('admin_update_username', {
-     target_role: targetRole,
-     target_code: targetCode,
-     current_username: oldUsername,
-     new_username: proposed.trim().toLowerCase()
-   });
-
-   alert(res.message);
-   if (res.success) {
-     loadSuperAdminClients();
-   }
- }
-   msgEl.textContent = res.message;
-   msgEl.className = res.success ? 'text-xs font-semibold text-emerald-700' : 'text-xs font-semibold text-red-600';
-   msgEl.classList.remove('hidden');
-
-   if (res.success) {
-     oldInput.value = '';
-     newInput.value = '';
-   }
- }
     function enterApp(user) {
       currentUser = user;
-      document.getElementById('view-login').classList.add('hidden');
-      document.getElementById('view-setup-code').classList.add('hidden');
       document.getElementById('btn-logout').classList.remove('hidden');
+      document.getElementById('header-subtitle').textContent = (user.full_name || user.username) + ' • ' + user.role;
 
-      if (currentUser.role === 'super_admin') {
-        document.getElementById('header-subtitle').textContent = 'Super-Admin Plateforme';
-        document.getElementById('view-superadmin').classList.remove('hidden');
+      if (user.role === 'super_admin') {
+        showSection('view-superadmin');
         loadSuperAdminClients();
-      } else if (currentUser.role === 'company_admin') {
-        document.getElementById('header-subtitle').textContent = 'Société : ' + currentUser.company_code;
-        document.getElementById('view-company').classList.remove('hidden');
+      } else if (user.role === 'company_admin') {
+        document.getElementById('comp-title').textContent = user.full_name || user.company_code;
+        document.getElementById('comp-subtitle').textContent = 'Code société : ' + user.company_code;
+        document.getElementById('comp-rep-date').value = todayIso();
+        showSection('view-company');
+        switchCompTab('emp');
         loadCompanyData();
-      } else {
-        document.getElementById('header-subtitle').textContent = 'Restaurant : ' + currentUser.restaurant_code;
-        document.getElementById('view-restaurant').classList.remove('hidden');
-        loadRestaurantReport();
+      } else if (user.role === 'restaurant_operator') {
+        document.getElementById('resto-title').textContent = user.full_name || user.restaurant_code;
+        document.getElementById('resto-subtitle').textContent = 'Code restaurant : ' + user.restaurant_code;
+        document.getElementById('resto-rep-date').value = todayIso();
+        showSection('view-restaurant');
+        switchRestoTab('scan');
       }
     }
 
-    function logout() {
-      location.reload();
+    async function logout() {
+      await stopQrScanner();
+      await stopRefundScanner();
+      currentUser = null;
+      pendingSetupUser = null;
+      document.getElementById('btn-logout').classList.add('hidden');
+      document.getElementById('header-subtitle').textContent = 'Gestion repas & crédits employés';
+      document.getElementById('login-password').value = '';
+      showSection('view-login');
     }
 
-    // SUPER-ADMIN : CRÉATION SOCIÉTÉ + RESTAURANT
-    async function handleAdminCreateClient(e) {
+    async function handleChangeAccessCode(e, prefix) {
       e.preventDefault();
-      const btn = document.getElementById('btn-sa-create');
-      const fb = document.getElementById('sa-feedback');
-      fb.classList.add('hidden');
-      btn.disabled = true;
-      btn.textContent = 'Création en cours...';
+      const oldInput = document.getElementById(prefix + '-old-code');
+      const newInput = document.getElementById(prefix + '-new-code');
+      const msgEl = document.getElementById(prefix + '-code-msg');
+      msgEl.classList.add('hidden');
 
-      try {
-        const res = await callApi('admin_create_client', {
-          company_code: document.getElementById('sa-comp-code').value,
-          company_name: document.getElementById('sa-comp-name').value,
-          company_username: document.getElementById('sa-comp-user').value,
-          restaurant_code: document.getElementById('sa-rest-code').value,
-          restaurant_name: document.getElementById('sa-rest-name').value,
-          restaurant_username: document.getElementById('sa-rest-user').value
-        });
+      const res = await callApi('change_access_code', {
+        username: currentUser.username,
+        old_code: oldInput.value,
+        new_code: newInput.value
+      });
 
-        fb.textContent = res.message;
-        fb.className = res.success ? 'text-sm font-medium text-emerald-700' : 'text-sm font-medium text-red-600';
-        fb.classList.remove('hidden');
+      msgEl.textContent = res.message;
+      msgEl.className = res.success ? 'text-xs font-semibold text-emerald-700' : 'text-xs font-semibold text-red-600';
+      msgEl.classList.remove('hidden');
 
-        if (res.success) {
-          e.target.reset();
-          loadSuperAdminClients();
-        }
-      } finally {
-        btn.disabled = false;
-        btn.textContent = '+ Créer la Société, le Restaurant & leurs 2 identifiants';
+      if (res.success) {
+        oldInput.value = '';
+        newInput.value = '';
+      }
+    }
+
+    // SUPER-ADMIN
+    async function handleCreateClient(e) {
+      e.preventDefault();
+      const msgEl = document.getElementById('sa-create-msg');
+      msgEl.classList.add('hidden');
+
+      const res = await callApi('admin_create_client', {
+        company_code: document.getElementById('sa-comp-code').value,
+        company_name: document.getElementById('sa-comp-name').value,
+        company_username: document.getElementById('sa-comp-user').value,
+        restaurant_code: document.getElementById('sa-rest-code').value,
+        restaurant_name: document.getElementById('sa-rest-name').value,
+        restaurant_username: document.getElementById('sa-rest-user').value
+      });
+
+      msgEl.textContent = res.message;
+      msgEl.className = res.success ? 'text-xs font-semibold text-emerald-700' : 'text-xs font-semibold text-red-600';
+      msgEl.classList.remove('hidden');
+
+      if (res.success) {
+        e.target.reset();
+        loadSuperAdminClients();
       }
     }
 
     async function loadSuperAdminClients() {
-      const list = document.getElementById('sa-clients-list');
-      list.innerHTML = '<p class="text-slate-400">Chargement...</p>';
+      const listEl = document.getElementById('sa-clients-list');
+      listEl.innerHTML = '<p class="text-xs text-slate-500">Chargement...</p>';
+
       const res = await callApi('admin_list_clients');
-      if (!res.success || !res.clients.length) {
-        list.innerHTML = '<p class="text-slate-400">Aucune société enregistrée.</p>';
+      if (!res.success) {
+        listEl.innerHTML = '<p class="text-xs text-red-600">' + (res.message || 'Erreur chargement') + '</p>';
         return;
       }
 
-      list.innerHTML = res.clients.map(c => {
-        const compBadge = c.company_account
-          ? (c.company_account.activated
-              ? `<span class="text-emerald-700 font-semibold">${c.company_account.username} (Code actif)</span>`
-              : `<span class="text-amber-600 font-semibold">${c.company_account.username} (En attente 1ère connexion)</span>`)
-          : '<span class="text-slate-400">Non défini</span>';
+      const clients = res.clients || [];
+      if (!clients.length) {
+        listEl.innerHTML = '<p class="text-xs text-slate-500">Aucune société enregistrée.</p>';
+        return;
+      }
 
-        const restBadge = c.restaurant_account
-          ? (c.restaurant_account.activated
-              ? `<span class="text-emerald-700 font-semibold">${c.restaurant_account.username} (Code actif)</span>`
-              : `<span class="text-amber-600 font-semibold">${c.restaurant_account.username} (En attente 1ère connexion)</span>`)
-          : '<span class="text-slate-400">Non défini</span>';
-
+      listEl.innerHTML = clients.map(c => {
+        const compLabel = c.company_account ? c.company_account.username : 'Non défini';
+        const restLabel = c.restaurant_account ? c.restaurant_account.username : 'Non défini';
         return `
-          <div class="p-3 rounded-xl border border-slate-200 bg-slate-50 space-y-1">
-            <div class="flex justify-between font-bold text-slate-900">
-              <span>${c.company_code}</span>
-              <span class="text-xs bg-blue-100 text-blue-900 px-2 py-0.5 rounded">${c.restaurant_name} (${c.restaurant_code})</span>
+          <div class="p-3 rounded-xl border border-slate-200 bg-slate-50 space-y-2">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="font-bold text-slate-900">${c.company_code}</p>
+                <p class="text-xs text-slate-500">Resto : ${c.restaurant_name} (${c.restaurant_code})</p>
+              </div>
+              <button type="button" onclick="openSuperAdminCompanyReport('${c.company_code}', '${c.company_code}')"
+                class="px-2.5 py-1 rounded-lg bg-blue-900 hover:bg-blue-800 text-white text-xs font-bold">
+                Rapport
+              </button>
             </div>
             <div class="flex items-center justify-between text-xs">
-           <span>Identifiant Société : ${compBadge}</span>
-           ${c.company_account ? `<button onclick="editClientUsername('company_admin', '${c.company_code}', '${c.company_account.username}')" class="text-blue-800 underline font-semibold">Modifier ID</button>` : ''}
-         </div>
-         <div class="flex items-center justify-between text-xs">
-           <span>Identifiant Resto : ${restBadge}</span>
-           ${c.restaurant_account ? `<button onclick="editClientUsername('restaurant_operator', '${c.restaurant_code}', '${c.restaurant_account.username}')" class="text-blue-800 underline font-semibold">Modifier ID</button>` : ''}
-         </div>
-       </div>
-     `;
-   }).join('');
- }
+              <span>ID Société : <strong>${compLabel}</strong></span>
+              ${c.company_account ? `<button type="button" onclick="editClientUsername('company_admin', '${c.company_code}', '${c.company_account.username}')" class="text-blue-800 underline font-semibold">Modifier ID</button>` : ''}
+            </div>
+            <div class="flex items-center justify-between text-xs">
+              <span>ID Resto : <strong>${restLabel}</strong></span>
+              ${c.restaurant_account ? `<button type="button" onclick="editClientUsername('restaurant_operator', '${c.restaurant_code}', '${c.restaurant_account.username}')" class="text-blue-800 underline font-semibold">Modifier ID</button>` : ''}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    async function handleUpdateMyAdminUsername(e) {
+      e.preventDefault();
+      const input = document.getElementById('sa-new-username');
+      const msgEl = document.getElementById('sa-user-msg');
+      msgEl.classList.add('hidden');
+
+      const res = await callApi('admin_update_username', {
+        target_role: 'super_admin',
+        current_username: currentUser.username,
+        new_username: input.value
+      });
+
+      msgEl.textContent = res.message;
+      msgEl.className = res.success ? 'text-xs font-semibold text-emerald-700' : 'text-xs font-semibold text-red-600';
+      msgEl.classList.remove('hidden');
+
+      if (res.success) {
+        currentUser.username = res.new_username;
+        input.value = '';
+      }
+    }
+
+    async function editClientUsername(targetRole, targetCode, oldUsername) {
+      const proposed = prompt('Nouvel identifiant pour ' + oldUsername + ' :', oldUsername);
+      if (!proposed || proposed.trim().toLowerCase() === oldUsername.toLowerCase()) return;
+
+      const res = await callApi('admin_update_username', {
+        target_role: targetRole,
+        target_code: targetCode,
+        current_username: oldUsername,
+        new_username: proposed.trim().toLowerCase()
+      });
+
+      alert(res.message);
+      if (res.success) {
+        loadSuperAdminClients();
+      }
+    }
+
+    async function openSuperAdminCompanyReport(companyCode, companyName) {
+      currentSaReportCompany = { code: companyCode, name: companyName };
+      const box = document.getElementById('sa-company-report-box');
+      box.classList.remove('hidden');
+      document.getElementById('sa-rep-title').textContent = 'Rapport journalier — ' + companyName;
+      const dateInput = document.getElementById('sa-rep-date');
+      if (!dateInput.value) dateInput.value = todayIso();
+      await reloadCurrentSuperAdminReport();
+    }
+
+    function closeSuperAdminCompanyReport() {
+      document.getElementById('sa-company-report-box').classList.add('hidden');
+    }
+
+    async function reloadCurrentSuperAdminReport() {
+      if (!currentSaReportCompany.code) return;
+      const dateVal = document.getElementById('sa-rep-date').value || todayIso();
+      const res = await callApi('get_company_data', {
+        company_code: currentSaReportCompany.code,
+        date: dateVal
+      });
+      const listEl = document.getElementById('sa-rep-list');
+      if (!res.success) {
+        listEl.innerHTML = '<p class="text-red-600">' + (res.message || 'Erreur rapport société') + '</p>';
+        return;
+      }
+      const rows = res.consumptions || [];
+      lastReportRows.sa = rows;
+      renderMealSummary(rows, 'sa');
+      if (!rows.length) {
+        listEl.innerHTML = '<p class="text-slate-500">Aucune consommation pour cette date.</p>';
+        return;
+      }
+      listEl.innerHTML = rows.map(c => `
+        <div class="p-2.5 rounded-lg border border-slate-200 flex items-center justify-between">
+          <div>
+            <p class="font-bold text-slate-900">${c.full_name} (${c.matricule})</p>
+            <p class="text-[11px] text-slate-500">${c.date} • ${c.time} • Resto : ${c.restaurant_code}</p>
+          </div>
+          <span class="text-[11px] font-bold ${c.status === 'REMBOURSÉ' ? 'text-amber-700' : 'text-emerald-700'}">${c.status}</span>
+        </div>
+      `).join('');
+    }
 
     // SOCIÉTÉ
-    function switchCompanyTab(tab) {
-      ['emp', 'rech', 'rep'].forEach(t => {
-        document.getElementById('comp-panel-' + t).classList.toggle('hidden', t !== tab);
-        const b = document.getElementById('tab-comp-' + t);
-        b.className = t === tab
-          ? 'py-2 rounded-lg text-xs font-bold bg-blue-900 text-white'
-          : 'py-2 rounded-lg text-xs font-bold text-slate-600';
+    async function switchCompTab(tab) {
+      document.getElementById('comp-panel-emp').classList.toggle('hidden', tab !== 'emp');
+      document.getElementById('comp-panel-rech').classList.toggle('hidden', tab !== 'rech');
+      document.getElementById('comp-panel-rep').classList.toggle('hidden', tab !== 'rep');
+      document.getElementById('comp-panel-rchr').classList.toggle('hidden', tab !== 'rchr');
+
+      ['emp', 'rech', 'rep', 'rchr'].forEach(k => {
+        const el = document.getElementById('tab-comp-' + k);
+        if (el) el.className = 'py-2 rounded-lg text-[11px] font-bold ' + (tab === k ? 'bg-blue-900 text-white' : 'bg-slate-200 text-slate-800');
       });
+
+      if (tab === 'emp' || tab === 'rep') await loadCompanyData();
+      if (tab === 'rchr') await loadCompanyRechargesReport();
     }
 
     async function loadCompanyData() {
-      const date = document.getElementById('comp-report-date').value;
-      const res = await callApi('get_company_data', { company_code: currentUser.company_code, date });
+      const dateVal = document.getElementById('comp-rep-date').value || todayIso();
+      const res = await callApi('get_company_data', {
+        company_code: currentUser.company_code,
+        date: dateVal
+      });
       if (!res.success) return;
 
-      const empList = document.getElementById('comp-emp-list');
-      empList.innerHTML = res.employees.length
-        ? res.employees.map(emp => `
-            <div class="py-2.5 flex items-center justify-between">
-              <div>
-                <p class="font-bold">${emp.full_name} <span class="text-xs text-slate-400">(${emp.matricule})</span></p>
-                <p class="text-xs font-semibold text-emerald-700">${emp.credits} crédit(s)</p>
-              </div>
-              <button onclick="showQrBadge('${emp.full_name.replace(/'/g, "\\'")}', '${emp.matricule}', '${emp.qr_value}')"
-                class="text-xs bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded-lg font-semibold">Voir QR</button>
+      const empList = document.getElementById('comp-employees-list');
+      const employees = res.employees || [];
+      empList.innerHTML = employees.length
+        ? employees.map(emp => `
+          <div class="p-2.5 rounded-lg border border-slate-200 flex items-center justify-between">
+            <div>
+              <p class="font-bold text-slate-900">${emp.full_name} (${emp.matricule})</p>
+              <p class="text-[11px] text-slate-500">Solde : <strong>${emp.credits}</strong> crédit(s)</p>
             </div>
-          `).join('')
-        : '<p class="py-3 text-slate-400">Aucun employé enregistré.</p>';
+            <button type="button" onclick="showQrBadge('${emp.full_name.replace(/'/g, "\\'")}', '${emp.matricule}', '${emp.qr_value}')"
+              class="px-2.5 py-1 rounded bg-slate-800 text-white font-bold text-[11px]">
+              Voir QR
+            </button>
+          </div>
+        `).join('')
+        : '<p class="text-slate-500">Aucun employé enregistré.</p>';
 
-      const consList = document.getElementById('comp-cons-list');
-      consList.innerHTML = res.consumptions.length
-        ? res.consumptions.map(c => `
-            <div class="py-2 flex justify-between items-center">
-              <div>
-                <p class="font-semibold">${c.full_name} (${c.matricule})</p>
-                <p class="text-xs text-slate-400">Resto: ${c.restaurant_code} • ${c.time}</p>
-              </div>
-              <span class="text-xs font-bold px-2 py-0.5 rounded ${c.status === 'VALIDÉ' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}">${c.status}</span>
+      const consumptions = res.consumptions || [];
+      lastReportRows.comp = consumptions;
+      renderMealSummary(consumptions, 'comp');
+
+      const repList = document.getElementById('comp-report-list');
+      repList.innerHTML = consumptions.length
+        ? consumptions.map(c => `
+          <div class="p-2.5 rounded-lg border border-slate-200 flex items-center justify-between">
+            <div>
+              <p class="font-bold text-slate-900">${c.full_name} (${c.matricule})</p>
+              <p class="text-[11px] text-slate-500">${c.date} • ${c.time} • Resto : ${c.restaurant_code}</p>
             </div>
-          `).join('')
-        : '<p class="py-3 text-slate-400">Aucun repas enregistré à cette date.</p>';
+            <span class="text-[11px] font-bold ${c.status === 'REMBOURSÉ' ? 'text-amber-700' : 'text-emerald-700'}">${c.status}</span>
+          </div>
+        `).join('')
+        : '<p class="text-slate-500">Aucune consommation pour cette date.</p>';
     }
 
     async function handleCreateEmployee(e) {
       e.preventDefault();
-      const matricule = document.getElementById('emp-matricule').value;
-      const full_name = document.getElementById('emp-fullname').value;
+      const msgEl = document.getElementById('emp-create-msg');
+      msgEl.classList.add('hidden');
+
+      const matricule = document.getElementById('emp-matricule').value.trim().toUpperCase();
+      const fullName = document.getElementById('emp-name').value.trim();
+
       const res = await callApi('create_employee', {
         company_code: currentUser.company_code,
         matricule,
-        full_name
+        full_name: fullName
       });
-      if (!res.success) {
-        alert(res.message);
-        return;
+
+      msgEl.textContent = res.success ? 'Employé créé avec succès.' : (res.message || 'Erreur création');
+      msgEl.className = res.success ? 'text-xs font-semibold text-emerald-700' : 'text-xs font-semibold text-red-600';
+      msgEl.classList.remove('hidden');
+
+      if (res.success && res.employee) {
+        showQrBadge(res.employee.full_name, res.employee.matricule, res.employee.qr_value);
+        e.target.reset();
+        loadCompanyData();
       }
-      e.target.reset();
-      showQrBadge(res.employee.full_name, res.employee.matricule, res.employee.qr_value);
-      loadCompanyData();
     }
 
     function showQrBadge(name, matricule, qrValue) {
@@ -687,7 +766,7 @@
       box.innerHTML = '';
       new QRCode(box, { text: qrValue, width: 115, height: 115 });
     }
-    
+
     function printQrBadge() {
       const name = document.getElementById('qr-emp-name').textContent;
       const mat = document.getElementById('qr-emp-mat').textContent;
@@ -696,171 +775,90 @@
       const canvas = qrContainer.querySelector('canvas');
       const qrSrc = img ? img.src : (canvas ? canvas.toDataURL('image/png') : '');
 
-   if (!qrSrc) {
-     alert('Aucun QR code à imprimer.');
-     return;
-   }
+      if (!qrSrc) {
+        alert('Aucun QR code à imprimer.');
+        return;
+      }
 
-   const win = window.open('', '_blank', 'width=400,height=500');
-   win.document.write(`
-     <html>
-       <head>
-         <title>Badge QR - ${name}</title>
-         <style>
-           body { font-family: Arial, sans-serif; text-align: center; padding: 24px; }
-           .card { border: 1px solid #cbd5e1; border-radius: 12px; padding: 20px; display: inline-block; }
-           h2 { margin: 0 0 6px; font-size: 18px; }
-           p { margin: 0 0 14px; color: #475569; font-size: 13px; }
-           img { width: 140px; height: 140px; }
-         </style>
-       </head>
-       <body>
-         <div class="card">
-           <h2>${name}</h2>
-           <p>${mat}</p>
-           <img src="${qrSrc}" />
-         </div>
-         <script>
-           window.onload = function() { window.print(); };
-         <\/script>
-       </body>
-     </html>
-   `);
-   win.document.close();
- }
+      const win = window.open('', '_blank', 'width=400,height=500');
+      win.document.write(`
+        <html>
+          <head>
+            <title>Badge QR - ${name}</title>
+            <style>
+              body { font-family: Arial, sans-serif; text-align: center; padding: 24px; }
+              .card { border: 1px solid #cbd5e1; border-radius: 12px; padding: 20px; display: inline-block; }
+              h2 { margin: 0 0 6px; font-size: 18px; }
+              p { margin: 0 0 14px; color: #475569; font-size: 13px; }
+              img { width: 140px; height: 140px; }
+            </style>
+          </head>
+          <body>
+            <div class="card">
+              <h2>${name}</h2>
+              <p>${mat}</p>
+              <img src="${qrSrc}" />
+            </div>
+            <script>window.onload = function() { window.print(); };<\/script>
+          </body>
+        </html>
+      `);
+      win.document.close();
+    }
 
     async function handleRecharge(e) {
       e.preventDefault();
-      const fb = document.getElementById('rech-feedback');
+      const msgEl = document.getElementById('rech-msg');
+      msgEl.classList.add('hidden');
+
       const res = await callApi('recharge_employee', {
         company_code: currentUser.company_code,
         matricule: document.getElementById('rech-matricule').value,
-        amount: document.getElementById('rech-amount').value,
+        amount: document.getElementById('rech-amount').value
       });
-      fb.classList.remove('hidden');
+
+      msgEl.textContent = res.success ? ('Recharge effectuée. Nouveau solde : ' + res.new_credits) : (res.message || 'Erreur recharge');
+      msgEl.className = res.success ? 'text-xs font-semibold text-emerald-700' : 'text-xs font-semibold text-red-600';
+      msgEl.classList.remove('hidden');
+
       if (res.success) {
-        fb.className = 'text-sm font-bold text-emerald-700';
-        fb.textContent = 'Recharge effectuée ! Nouveau solde : ' + res.new_credits + ' crédit(s).';
         e.target.reset();
         loadCompanyData();
-      } else {
-        fb.className = 'text-sm font-bold text-red-600';
-        fb.textContent = res.message;
       }
+    }
+
+    async function loadCompanyRechargesReport() {
+      const res = await callApi('get_company_recharges', {
+        company_code: currentUser.company_code
+      });
+      const listEl = document.getElementById('comp-recharges-list');
+      const totalEl = document.getElementById('comp-recharges-total');
+      if (!res.success) {
+        listEl.innerHTML = '<p class="text-red-600">' + (res.message || 'Erreur chargement recharges') + '</p>';
+        return;
+      }
+      lastRechargeRows = res.items || [];
+      let total = 0;
+      lastRechargeRows.forEach(r => { total += Number(r.amount || 0); });
+      totalEl.textContent = total;
+
+      if (!lastRechargeRows.length) {
+        listEl.innerHTML = '<p class="text-slate-500">Aucune recharge enregistrée.</p>';
+        return;
+      }
+      listEl.innerHTML = lastRechargeRows.map(r => `
+        <div class="p-2.5 rounded-lg border border-slate-200 flex items-center justify-between">
+          <div>
+            <p class="font-bold text-slate-900">${r.full_name} (${r.matricule})</p>
+            <p class="text-[11px] text-slate-500">${r.date} • ${r.time}</p>
+          </div>
+          <span class="font-bold text-emerald-700">+${r.amount} crédit(s)</span>
+        </div>
+      `).join('');
     }
 
     // RESTAURANT
-    function switchRestoTab(tab) {
-      ['scan', 'report'].forEach(t => {
-        document.getElementById('resto-panel-' + t).classList.toggle('hidden', t !== tab);
-        const b = document.getElementById('tab-resto-' + t);
-        b.className = t === tab
-          ? 'py-2 rounded-lg text-xs font-bold bg-blue-900 text-white'
-          : 'py-2 rounded-lg text-xs font-bold text-slate-600';
-      });
-      if (tab === 'report') loadRestaurantReport();
-    }
-
-    function startQrScanner() {
-      if (html5QrCode) return;
-      html5QrCode = new Html5Qrcode('qr-reader');
-      html5QrCode.start(
-        { facingMode: 'environment' },
-        { fps: 15, qrbox: { width: 220, height: 220 } },
-        async (decodedText) => {
-          if (scanPaused) return;
-          scanPaused = true;
-          await processQrScan(decodedText);
-          setTimeout(() => { scanPaused = false; }, 900 );
-        }
-      ).catch(err => alert('Caméra inaccessible : ' + err));
-    }
-
-    async function processQrScan(qrValue) {
-      const box = document.getElementById('scan-feedback');
-      const title = document.getElementById('scan-status-title');
-      const detail = document.getElementById('scan-status-detail');
-      const balance = document.getElementById('scan-status-balance');
-
-      box.classList.remove('hidden');
-      title.textContent = 'Validation en cours...';
-      detail.textContent = '';
-      balance.textContent = '';
-
-      const res = await callApi('scan_meal', {
-        restaurant_code: currentUser.restaurant_code,
-        qr_value: qrValue
-      });
-
-      if (res.success) {
-        playBeep(true);
-        box.className = 'p-4 rounded-xl border-2 border-emerald-600 bg-emerald-50 text-emerald-900 text-center shadow-sm';
-        title.textContent = 'PLAT VALIDÉ (-1 CRÉDIT)';
-        detail.textContent = res.employee_name + ' (' + res.company_code + ' - ' + res.matricule + ')';
-        balance.textContent = 'Solde restant : ' + res.remaining_credits + ' crédit(s)';
-      } else {
-        playBeep(false);
-        box.className = 'p-4 rounded-xl border-2 border-red-600 bg-red-50 text-red-900 text-center shadow-sm';
-        title.textContent = 'REFUSÉ';
-        detail.textContent = res.message;
-        balance.textContent = '';
-      }
-    }
-
-    async function loadRestaurantReport() {
-      const date = document.getElementById('resto-report-date').value;
-      const res = await callApi('get_restaurant_report', {
-        restaurant_code: currentUser.restaurant_code,
-        date
-      });
-      if (!res.success) return;
-
-      const valides = res.items.filter(x => x.status === 'VALIDÉ').length;
-      const rembourses = res.items.filter(x => x.status === 'REMBOURSÉ').length;
-
-      document.getElementById('resto-report-summary').innerHTML = `
-        <div class="bg-white p-3 rounded-xl border border-slate-200 text-center">
-          <p class="text-xs text-slate-500">Plats servis</p>
-          <p class="text-2xl font-extrabold text-emerald-700">${valides}</p>
-        </div>
-        <div class="bg-white p-3 rounded-xl border border-slate-200 text-center">
-          <p class="text-xs text-slate-500">Remboursés</p>
-          <p class="text-2xl font-extrabold text-amber-600">${rembourses}</p>
-        </div>
-      `;
-
-      const list = document.getElementById('resto-report-list');
-      list.innerHTML = res.items.length
-        ? res.items.map(item => `
-            <div class="py-2.5 flex items-center justify-between">
-              <div>
-                <p class="font-bold">${item.full_name} <span class="text-xs text-slate-400">(${item.company_code} • ${item.matricule})</span></p>
-                <p class="text-xs text-slate-400">${item.time} • ${item.status}</p>
-              </div>
-              ${item.status === 'VALIDÉ' && item.date === todayISO
-                ? `<button onclick="refundMeal('${item.id}')" class="text-xs bg-amber-100 text-amber-900 font-bold px-2.5 py-1.5 rounded-lg">Rembourser (+1)</button>`
-                : `<span class="text-xs font-semibold text-slate-400">${item.status}</span>`}
-            </div>
-          `).join('')
-        : '<p class="py-3 text-slate-400">Aucun plat enregistré à cette date.</p>';
-    }
-
-    async function refundMeal(consumptionId) {
-      if (!confirm('Confirmer le remboursement (+1 crédit) pour ce plat ?')) return;
-      const res = await callApi('refund_meal', {
-        consumption_id: consumptionId,
-        restaurant_code: currentUser.restaurant_code
-      });
-      if (!res.success) alert(res.message);
-      loadRestaurantReport();
-    }
-    let refundQrScanner = null;
-    let refundScanPaused = false;
-    let lastReportRows = { resto: [], comp: [], sa: [] };
-    let lastRechargeRows = [];
-    let currentSaReportCompany = { code: '', name: '' };
-
-    function switchRestoTab(tab) {
+    async function switchRestoTab(tab) {
       document.getElementById('resto-panel-scan').classList.toggle('hidden', tab !== 'scan');
       document.getElementById('resto-panel-refund').classList.toggle('hidden', tab !== 'refund');
       document.getElementById('resto-panel-rep').classList.toggle('hidden', tab !== 'rep');
@@ -869,8 +867,62 @@
       document.getElementById('tab-resto-refund').className = 'py-2 rounded-lg text-xs font-bold ' + (tab === 'refund' ? 'bg-amber-600 text-white' : 'bg-slate-200 text-slate-800');
       document.getElementById('tab-resto-rep').className = 'py-2 rounded-lg text-xs font-bold ' + (tab === 'rep' ? 'bg-blue-900 text-white' : 'bg-slate-200 text-slate-800');
 
-      if (tab !== 'refund') stopRefundScanner();
-      if (tab === 'rep' && typeof loadRestaurantReport === 'function') loadRestaurantReport();
+      if (tab !== 'scan') await stopQrScanner();
+      if (tab !== 'refund') await stopRefundScanner();
+      if (tab === 'rep') await loadRestaurantReport();
+    }
+
+    async function stopQrScanner() {
+      if (html5QrCode) {
+        try { await html5QrCode.stop(); } catch (e) {}
+        try { await html5QrCode.clear(); } catch (e) {}
+        html5QrCode = null;
+      }
+      scanPaused = false;
+      const btn = document.getElementById('btn-toggle-scan');
+      if (btn) btn.textContent = 'Démarrer le scan';
+    }
+
+    async function toggleQrScanner() {
+      if (html5QrCode) {
+        await stopQrScanner();
+        return;
+      }
+      html5QrCode = new Html5Qrcode('qr-reader');
+      document.getElementById('btn-toggle-scan').textContent = 'Arrêter le scan';
+      html5QrCode.start(
+        { facingMode: 'environment' },
+        { fps: 15, qrbox: { width: 220, height: 220 } },
+        async (decodedText) => {
+          if (scanPaused) return;
+          scanPaused = true;
+          await processQrScan(decodedText);
+          setTimeout(() => { scanPaused = false; }, 900);
+        }
+      ).catch(err => {
+        alert('Caméra inaccessible : ' + err);
+        stopQrScanner();
+      });
+    }
+
+    async function processQrScan(qrValue) {
+      const box = document.getElementById('resto-scan-result');
+      box.classList.remove('hidden');
+      box.className = 'p-3 rounded-lg text-xs font-semibold bg-slate-100 text-slate-800';
+      box.textContent = 'Validation en cours...';
+
+      const res = await callApi('scan_meal', {
+        restaurant_code: currentUser.restaurant_code,
+        qr_value: qrValue
+      });
+
+      if (res.success) {
+        box.className = 'p-3 rounded-lg text-xs font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200';
+        box.textContent = 'Validé : ' + res.employee_name + ' (' + res.matricule + ') — Solde restant : ' + res.remaining_credits + ' crédit(s).';
+      } else {
+        box.className = 'p-3 rounded-lg text-xs font-semibold bg-red-50 text-red-700 border border-red-200';
+        box.textContent = res.message || 'Scan refusé.';
+      }
     }
 
     async function stopRefundScanner() {
@@ -926,6 +978,39 @@
       }
     }
 
+    async function loadRestaurantReport() {
+      const dateVal = document.getElementById('resto-rep-date').value || todayIso();
+      const res = await callApi('get_restaurant_report', {
+        restaurant_code: currentUser.restaurant_code,
+        date: dateVal
+      });
+      const listEl = document.getElementById('resto-report-list');
+      if (!res.success) {
+        listEl.innerHTML = '<p class="text-red-600">' + (res.message || 'Erreur rapport') + '</p>';
+        return;
+      }
+
+      const items = res.items || [];
+      lastReportRows.resto = items;
+      renderMealSummary(items, 'resto');
+
+      if (!items.length) {
+        listEl.innerHTML = '<p class="text-slate-500">Aucune consommation pour cette date.</p>';
+        return;
+      }
+
+      listEl.innerHTML = items.map(it => `
+        <div class="p-2.5 rounded-lg border border-slate-200 flex items-center justify-between">
+          <div>
+            <p class="font-bold text-slate-900">${it.full_name} (${it.matricule})</p>
+            <p class="text-[11px] text-slate-500">${it.company_code} • ${it.date} • ${it.time}</p>
+          </div>
+          <span class="text-[11px] font-bold ${it.status === 'REMBOURSÉ' ? 'text-amber-700' : 'text-emerald-700'}">${it.status}</span>
+        </div>
+      `).join('');
+    }
+
+    // RAPPORTS : CALCUL NET, TÉLÉCHARGEMENT CSV & IMPRESSION
     function renderMealSummary(items, prefix) {
       let served = 0;
       let refunded = 0;
@@ -943,102 +1028,12 @@
       if (nEl) nEl.textContent = net;
     }
 
-    async function switchCompTab(tab) {
-      document.getElementById('comp-panel-emp').classList.toggle('hidden', tab !== 'emp');
-      document.getElementById('comp-panel-rech').classList.toggle('hidden', tab !== 'rech');
-      document.getElementById('comp-panel-rep').classList.toggle('hidden', tab !== 'rep');
-      document.getElementById('comp-panel-rchr').classList.toggle('hidden', tab !== 'rchr');
-
-      ['emp', 'rech', 'rep', 'rchr'].forEach(k => {
-        const el = document.getElementById('tab-comp-' + k);
-        if (el) el.className = 'py-2 rounded-lg text-[11px] font-bold ' + (tab === k ? 'bg-blue-900 text-white' : 'bg-slate-200 text-slate-800');
-      });
-
-      if (tab === 'rep' && typeof loadCompanyData === 'function') loadCompanyData();
-      if (tab === 'rchr') await loadCompanyRechargesReport();
-    }
-
-    async function loadCompanyRechargesReport() {
-      const res = await callApi('get_company_recharges', {
-        company_code: currentUser.company_code
-      });
-      const listEl = document.getElementById('comp-recharges-list');
-      const totalEl = document.getElementById('comp-recharges-total');
-      if (!res.success) {
-        listEl.innerHTML = '<p class="text-red-600">' + (res.message || 'Erreur chargement recharges') + '</p>';
-        return;
-      }
-      lastRechargeRows = res.items || [];
-      let total = 0;
-      lastRechargeRows.forEach(r => total += Number(r.amount || 0));
-      totalEl.textContent = total;
-
-      if (!lastRechargeRows.length) {
-        listEl.innerHTML = '<p class="text-slate-500">Aucune recharge enregistrée.</p>';
-        return;
-      }
-      listEl.innerHTML = lastRechargeRows.map(r => `
-        <div class="p-2.5 rounded-lg border border-slate-200 flex items-center justify-between">
-          <div>
-            <p class="font-bold text-slate-900">${r.full_name} (${r.matricule})</p>
-            <p class="text-[11px] text-slate-500">${r.date} • ${r.time}</p>
-          </div>
-          <span class="font-bold text-emerald-700">+${r.amount} crédit(s)</span>
-        </div>
-      `).join('');
-    }
-
-    async function openSuperAdminCompanyReport(companyCode, companyName) {
-      currentSaReportCompany = { code: companyCode, name: companyName };
-      const box = document.getElementById('sa-company-report-box');
-      box.classList.remove('hidden');
-      document.getElementById('sa-rep-title').textContent = 'Rapport journalier — ' + companyName + ' (' + companyCode + ')';
-      const dateInput = document.getElementById('sa-rep-date');
-      if (!dateInput.value) {
-        dateInput.value = new Date().toISOString().slice(0, 10);
-      }
-      await reloadCurrentSuperAdminReport();
-    }
-
-    function closeSuperAdminCompanyReport() {
-      document.getElementById('sa-company-report-box').classList.add('hidden');
-    }
-
-    async function reloadCurrentSuperAdminReport() {
-      if (!currentSaReportCompany.code) return;
-      const dateVal = document.getElementById('sa-rep-date').value || new Date().toISOString().slice(0, 10);
-      const res = await callApi('get_company_data', {
-        company_code: currentSaReportCompany.code,
-        date: dateVal
-      });
-      const listEl = document.getElementById('sa-rep-list');
-      if (!res.success) {
-        listEl.innerHTML = '<p class="text-red-600">' + (res.message || 'Erreur rapport société') + '</p>';
-        return;
-      }
-      const rows = res.consumptions || [];
-      lastReportRows.sa = rows;
-      renderMealSummary(rows, 'sa');
-      if (!rows.length) {
-        listEl.innerHTML = '<p class="text-slate-500">Aucune consommation pour cette date.</p>';
-        return;
-      }
-      listEl.innerHTML = rows.map(c => `
-        <div class="p-2.5 rounded-lg border border-slate-200 flex items-center justify-between">
-          <div>
-            <p class="font-bold text-slate-900">${c.full_name} (${c.matricule})</p>
-            <p class="text-[11px] text-slate-500">${c.date} • ${c.time} • Resto : ${c.restaurant_code}</p>
-          </div>
-          <span class="text-[11px] font-bold ${c.status === 'REMBOURSÉ' ? 'text-amber-700' : 'text-emerald-700'}">${c.status}</span>
-        </div>
-      `).join('');
-    }
-
     function downloadReportCsv(scope) {
       const rows = lastReportRows[scope] || [];
       const csvLines = ['Matricule,Nom,Restaurant,Date,Heure,Statut'];
       rows.forEach(r => {
-        csvLines.push([r.matricule, r.full_name, r.restaurant_code || '', r.date, r.time, r.status].map(v => `"${String(v || '').replace(/"/g, '""')}"`).join(','));
+        csvLines.push([r.matricule, r.full_name, r.restaurant_code || '', r.date, r.time, r.status]
+          .map(v => `"${String(v || '').replace(/"/g, '""')}"`).join(','));
       });
       const blob = new Blob([csvLines.join('\n')], { type: 'text/csv;charset=utf-8;' });
       const url = URL.createObjectURL(blob);
@@ -1052,7 +1047,8 @@
     function downloadRechargesCsv() {
       const csvLines = ['Matricule,Nom,Credits,Date,Heure'];
       (lastRechargeRows || []).forEach(r => {
-        csvLines.push([r.matricule, r.full_name, r.amount, r.date, r.time].map(v => `"${String(v || '').replace(/"/g, '""')}"`).join(','));
+        csvLines.push([r.matricule, r.full_name, r.amount, r.date, r.time]
+          .map(v => `"${String(v || '').replace(/"/g, '""')}"`).join(','));
       });
       const blob = new Blob([csvLines.join('\n')], { type: 'text/csv;charset=utf-8;' });
       const url = URL.createObjectURL(blob);
@@ -1074,7 +1070,6 @@
             <style>
               body { font-family: Arial, sans-serif; padding: 20px; color: #0f172a; }
               h2 { margin-bottom: 14px; font-size: 18px; }
-              .item { border-bottom: 1px solid #e2e8f0; padding: 8px 0; font-size: 13px; }
             </style>
           </head>
           <body>
