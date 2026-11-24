@@ -462,8 +462,8 @@
   </main>
 
   <script>
-    // 'https://script.google.com/macros/s/AKfycbzjzEoY8E0BZPpquymY1Lj9QEifDhZCrOPAY1b_NqJlvy8X0aTpzmWSnYe4aXLFtYlO/exec'
-    const API_URL = 'https://script.google.com/macros/s/AKfycbzjzEoY8E0BZPpquymY1Lj9QEifDhZCrOPAY1b_NqJlvy8X0aTpzmWSnYe4aXLFtYlO/exec';
+    // 'https://script.google.com/macros/s/AKfycbywM2lIwaEAp_yCj1kBILhx756VG5clDkr4odvtYLYV0pCe0Clw-ezaT41_HF13QOtJ/exec'
+    const API_URL = 'https://script.google.com/macros/s/AKfycbywM2lIwaEAp_yCj1kBILhx756VG5clDkr4odvtYLYV0pCe0Clw-ezaT41_HF13QOtJ/exec';
 
     let currentUser = null;
     let pendingSetupUser = null;
@@ -676,55 +676,119 @@
       }
     }
 
-    async function loadSuperAdminClients() {
-      const listEl = document.getElementById('sa-clients-list');
-      listEl.innerHTML = '<p class="text-xs text-slate-500">Chargement...</p>';
+    let expandedClientMenuCode = '';
 
-      const res = await callApi('admin_list_clients');
-      if (!res.success) {
-        listEl.innerHTML = '<p class="text-xs text-red-600">' + (res.message || 'Erreur chargement') + '</p>';
-        return;
-      }
+function toggleClientManageMenu(companyCode) {
+  expandedClientMenuCode = (expandedClientMenuCode === companyCode) ? '' : companyCode;
+  loadSuperAdminClients();
+}
 
-      const clients = res.clients || [];
-      if (!clients.length) {
-        listEl.innerHTML = '<p class="text-xs text-slate-500">Aucune société enregistrée.</p>';
-        return;
-      }
+async function handleToggleClientStatus(companyCode, currentStatus) {
+  const isBlocked = currentStatus === 'BLOQUÉ';
+  const actionLabel = isBlocked ? 'réactiver' : 'bloquer';
+  if (!confirm('Voulez-vous vraiment ' + actionLabel + ' la société ' + companyCode + ' ?')) {
+    return;
+  }
 
-      listEl.innerHTML = clients.map(c => {
-        const compLabel = c.company_account ? c.company_account.username : 'Non défini';
-        const restLabel = c.restaurant_account ? c.restaurant_account.username : 'Non défini';
-        return `
-          <div class="p-3.5 rounded-xl border border-slate-200 bg-slate-50/90 space-y-2">
-            <div class="flex items-center justify-between gap-2">
-              <div>
-                <p class="font-bold text-slate-900">${c.company_code}</p>
-                <p class="text-xs text-slate-500">Resto : ${c.restaurant_name} (${c.restaurant_code})</p>
-              </div>
-              <div class="flex items-center gap-1.5">
-                <button type="button" onclick="openSuperAdminCodeHistory('${c.company_code}', '${c.restaurant_name}')"
-                  class="px-2.5 py-1.5 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-900 border border-indigo-200 text-xs font-bold btn-smooth">
-                  Voir détail
-                </button>
-                <button type="button" onclick="openSuperAdminCompanyReport('${c.company_code}', '${c.company_code}')"
-                  class="px-3 py-1.5 rounded-xl bg-blue-900 hover:bg-blue-800 text-white text-xs font-bold btn-smooth">
-                  Rapport
-                </button>
-              </div>
+  const res = await callApi('admin_toggle_client_status', {
+    company_code: companyCode
+  });
+
+  alert(res.message || 'Opération effectuée.');
+  if (res.success) {
+    loadSuperAdminClients();
+  }
+}
+
+async function handleDeleteClient(companyCode) {
+  if (!confirm('ATTENTION : Supprimer définitivement la société ' + companyCode + ', ses comptes et ses employés ?')) {
+    return;
+  }
+
+  const res = await callApi('admin_delete_client', {
+    company_code: companyCode
+  });
+
+  alert(res.message || 'Suppression effectuée.');
+  if (res.success) {
+    if (expandedClientMenuCode === companyCode) expandedClientMenuCode = '';
+    loadSuperAdminClients();
+  }
+}
+
+async function loadSuperAdminClients() {
+  const listEl = document.getElementById('sa-clients-list');
+  listEl.innerHTML = '<p class="text-xs text-slate-500">Chargement...</p>';
+
+  const res = await callApi('admin_list_clients');
+  if (!res.success) {
+    listEl.innerHTML = '<p class="text-xs text-red-600">' + (res.message || 'Erreur chargement') + '</p>';
+    return;
+  }
+
+  const clients = res.clients || [];
+  if (!clients.length) {
+    listEl.innerHTML = '<p class="text-xs text-slate-500">Aucune société enregistrée.</p>';
+    return;
+  }
+
+  listEl.innerHTML = clients.map(c => {
+    const compLabel = c.company_account ? c.company_account.username : 'Non défini';
+    const restLabel = c.restaurant_account ? c.restaurant_account.username : 'Non défini';
+    const isBlocked = c.status === 'BLOQUÉ';
+    const isMenuOpen = expandedClientMenuCode === c.company_code;
+
+    return `
+      <div class="p-3.5 rounded-xl border ${isBlocked ? 'border-red-200 bg-red-50/40' : 'border-slate-200 bg-slate-50/90'} space-y-2">
+        <div class="flex items-center justify-between gap-2">
+          <div>
+            <div class="flex items-center gap-2">
+              <p class="font-bold text-slate-900">${c.company_code}</p>
+              <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${isBlocked ? 'bg-red-100 text-red-700' : 'bg-emerald-100 text-emerald-800'}">${isBlocked ? 'BLOQUÉ' : 'ACTIF'}</span>
             </div>
-            <div class="flex items-center justify-between text-xs pt-1 border-t border-slate-200/70">
-              <span>ID Société : <strong>${compLabel}</strong></span>
-              ${c.company_account ? `<button type="button" onclick="editClientUsername('company_admin', '${c.company_code}', '${c.company_account.username}')" class="text-blue-800 underline font-semibold">Modifier ID</button>` : ''}
-            </div>
-            <div class="flex items-center justify-between text-xs">
-              <span>ID Resto : <strong>${restLabel}</strong></span>
-              ${c.restaurant_account ? `<button type="button" onclick="editClientUsername('restaurant_operator', '${c.restaurant_code}', '${c.restaurant_account.username}')" class="text-blue-800 underline font-semibold">Modifier ID</button>` : ''}
-            </div>
+            <p class="text-xs text-slate-500">Resto : ${c.restaurant_name} (${c.restaurant_code})</p>
           </div>
-        `;
-      }).join('');
-    }
+          <div class="flex items-center gap-1.5 flex-wrap justify-end">
+            <button type="button" onclick="openSuperAdminCodeHistory('${c.company_code}', '${c.restaurant_name}')"
+              class="px-2.5 py-1.5 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-900 border border-indigo-200 text-xs font-bold btn-smooth">
+              Voir détail
+            </button>
+            <button type="button" onclick="openSuperAdminCompanyReport('${c.company_code}', '${c.company_code}')"
+              class="px-3 py-1.5 rounded-xl bg-blue-900 hover:bg-blue-800 text-white text-xs font-bold btn-smooth">
+              Rapport
+            </button>
+            <button type="button" onclick="toggleClientManageMenu('${c.company_code}')"
+              class="px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold btn-smooth">
+              ${isMenuOpen ? 'Fermer' : 'Gérer'}
+            </button>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between text-xs pt-1 border-t border-slate-200/70">
+          <span>ID Société : <strong>${compLabel}</strong></span>
+          ${c.company_account ? `<button type="button" onclick="editClientUsername('company_admin', '${c.company_code}', '${c.company_account.username}')" class="text-blue-800 underline font-semibold">Modifier ID</button>` : ''}
+        </div>
+        <div class="flex items-center justify-between text-xs">
+          <span>ID Resto : <strong>${restLabel}</strong></span>
+          ${c.restaurant_account ? `<button type="button" onclick="editClientUsername('restaurant_operator', '${c.restaurant_code}', '${c.restaurant_account.username}')" class="text-blue-800 underline font-semibold">Modifier ID</button>` : ''}
+        </div>
+
+        ${isMenuOpen ? `
+          <div class="pt-2.5 mt-1 border-t border-slate-200 flex items-center gap-2">
+            <button type="button" onclick="handleToggleClientStatus('${c.company_code}', '${c.status || 'ACTIF'}')"
+              class="flex-1 py-2 px-3 rounded-xl text-xs font-bold btn-smooth ${isBlocked ? 'bg-emerald-700 hover:bg-emerald-600 text-white' : 'bg-amber-600 hover:bg-amber-700 text-white'}">
+              ${isBlocked ? 'Réactiver la société' : 'Bloquer la société'}
+            </button>
+            <button type="button" onclick="handleDeleteClient('${c.company_code}')"
+              class="py-2 px-3 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold btn-smooth">
+              Supprimer la société
+            </button>
+          </div>
+        ` : ''}
+      </div>
+    `;
+  }).join('');
+}
 
     async function openSuperAdminCodeHistory(companyCode, restaurantName) {
       const box = document.getElementById('sa-code-history-box');
