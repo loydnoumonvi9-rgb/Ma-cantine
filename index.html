@@ -59,6 +59,12 @@
     </div>
   </header>
 
+  <!-- BANNIÈRE DE NOTIFICATION EN HAUT DE L'ÉCRAN -->
+  <div id="top-alert-banner" class="hidden fixed top-16 left-1/2 -translate-x-1/2 z-50 w-[94%] max-w-xl px-4 py-3.5 rounded-2xl shadow-2xl border text-sm font-bold flex items-center justify-between gap-3">
+    <span id="top-alert-text"></span>
+    <button type="button" onclick="hideTopAlert()" class="text-xs font-extrabold px-2 py-1 rounded-lg bg-black/10 hover:bg-black/20 shrink-0">✕</button>
+  </div>
+
   <main class="max-w-6xl mx-auto px-4 py-6">
 
     <!-- ÉCRAN 1 : CONNEXION -->
@@ -95,7 +101,7 @@
       </form>
     </section>
 
-    <!-- ÉCRAN 2 : PREMIÈRE CONNEXION (CRÉATION DU CODE D'ACCÈS UNIQUE) -->
+    <!-- ÉCRAN 2 : PREMIÈRE CONNEXION -->
     <section id="view-setup-code" class="hidden max-w-md mx-auto glass-card rounded-3xl p-6 sm:p-7 border border-slate-200/80 mt-2 sm:mt-4">
       <span class="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold bg-amber-50 text-amber-800 border border-amber-200 mb-2.5">
         Activation du compte
@@ -181,7 +187,6 @@
       </div>
 
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <!-- Créer Société + Restaurant -->
         <div class="glass-card rounded-3xl p-6">
           <h3 class="font-extrabold text-base text-slate-900 mb-1">Créer une Société & son Restaurant</h3>
           <p class="text-xs text-slate-500 mb-4">Les clients créeront eux-mêmes leur code d'accès à leur première connexion.</p>
@@ -237,7 +242,6 @@
           </form>
         </div>
 
-        <!-- Sociétés & Restaurants enregistrés -->
         <div class="glass-card rounded-3xl p-6 flex flex-col">
           <div class="flex items-center justify-between mb-4">
             <div>
@@ -254,7 +258,6 @@
         </div>
       </div>
 
-      <!-- Rapport journalier Super-Admin par société -->
       <div id="sa-company-report-panel" class="hidden glass-card rounded-3xl p-6 border border-blue-200/80 space-y-4">
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-slate-100 pb-4">
           <div>
@@ -279,7 +282,6 @@
         <div id="sa-report-table-wrap" class="overflow-x-auto"></div>
       </div>
 
-      <!-- Détail historique des modifications de codes d'accès -->
       <div id="sa-code-history-panel" class="hidden glass-card rounded-3xl p-6 border border-indigo-200/80 space-y-4">
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-slate-100 pb-4">
           <div>
@@ -317,10 +319,8 @@
         </div>
       </div>
 
-      <!-- Onglet Employés -->
       <div id="comp-tab-employees" class="grid grid-cols-1 lg:grid-cols-12 gap-6">
         <div class="lg:col-span-5 space-y-6">
-          <!-- Ajouter employé -->
           <div class="glass-card rounded-3xl p-6">
             <h3 class="font-extrabold text-base text-slate-900 mb-3">Ajouter un employé</h3>
             <form id="add-employee-form" onsubmit="handleAddEmployee(event)" class="space-y-3">
@@ -341,7 +341,6 @@
             </form>
           </div>
 
-          <!-- Recharger crédits -->
           <div class="glass-card rounded-3xl p-6">
             <h3 class="font-extrabold text-base text-slate-900 mb-3">Recharger des crédits repas</h3>
             <form id="recharge-employee-form" onsubmit="handleRechargeEmployee(event)" class="space-y-3">
@@ -363,7 +362,6 @@
           </div>
         </div>
 
-        <!-- Liste employés + recherche + 1 seul bouton Supprimer un employé -->
         <div class="lg:col-span-7 glass-card rounded-3xl p-6 space-y-4">
           <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5">
             <div>
@@ -376,7 +374,6 @@
             </button>
           </div>
 
-          <!-- Panneau unique pour supprimer un employé par matricule -->
           <div id="delete-employee-box" class="hidden p-4 rounded-2xl bg-red-50/80 border border-red-200 space-y-3">
             <div class="flex items-center justify-between">
               <p class="text-xs font-extrabold uppercase tracking-wider text-red-800">Supprimer un employé par matricule</p>
@@ -403,7 +400,6 @@
         </div>
       </div>
 
-      <!-- Onglet Rapport Journalier Société -->
       <div id="comp-tab-reports" class="hidden glass-card rounded-3xl p-6 space-y-4">
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
@@ -425,7 +421,6 @@
         <div id="comp-report-table" class="overflow-x-auto"></div>
       </div>
 
-      <!-- Onglet Rapport Recharges Société (avec filtre par date) -->
       <div id="comp-tab-recharges" class="hidden glass-card rounded-3xl p-6 space-y-4">
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
@@ -474,12 +469,11 @@
         </div>
       </div>
 
-      <!-- Onglet Scan en boucle -->
       <div id="rest-tab-scan" class="max-w-xl mx-auto glass-card rounded-3xl p-6 space-y-4">
         <div class="flex items-center justify-between gap-2">
           <div>
             <h3 class="font-extrabold text-base text-slate-900">Scanner un badge QR (-1 crédit)</h3>
-            <p class="text-xs text-slate-500">Mode scan continu : 1 repas maximum par jour et par employé</p>
+            <p class="text-xs text-slate-500">Un plat, un jour : 1 débit maximum par jour et par employé</p>
           </div>
           <button type="button" id="btn-toggle-scan" onclick="toggleLoopScanner('scan')" class="px-4 py-2.5 rounded-xl bg-blue-900 hover:bg-blue-800 text-white text-xs font-bold btn-smooth">
             Démarrer le scan
@@ -490,12 +484,11 @@
         <div id="scan-result-box" class="hidden p-4 rounded-2xl border text-sm font-semibold"></div>
       </div>
 
-      <!-- Onglet Remboursement par scan QR -->
       <div id="rest-tab-refund" class="hidden max-w-xl mx-auto glass-card rounded-3xl p-6 space-y-4">
         <div class="flex items-center justify-between gap-2">
           <div>
             <h3 class="font-extrabold text-base text-slate-900">Remboursement par scan QR (+1 crédit)</h3>
-            <p class="text-xs text-slate-500">Vérifie qu'un débit a bien eu lieu aujourd'hui dans ce restaurant</p>
+            <p class="text-xs text-slate-500">Vérifie si ce QR a déjà été débité aujourd'hui puis crédite +1</p>
           </div>
           <button type="button" id="btn-toggle-refund" onclick="toggleLoopScanner('refund')" class="px-4 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold btn-smooth">
             Scanner pour rembourser
@@ -506,7 +499,6 @@
         <div id="refund-result-box" class="hidden p-4 rounded-2xl border text-sm font-semibold"></div>
       </div>
 
-      <!-- Onglet Rapport Journalier Restaurant -->
       <div id="rest-tab-report" class="hidden glass-card rounded-3xl p-6 space-y-4">
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
@@ -532,7 +524,8 @@
   </main>
 
   <script>
-    const API_URL = 'https://script.google.com/macros/s/AKfycbxru__XO9B2thoognGxf-8iJ4IAIEKD7fozaBKayzl6eM0norf9vcwseZv5_fxaOHs/exec';
+    // 'https://script.google.com/macros/s/AKfycbxKITM-q1zI3sEDasqcKhJMCjosIvco0aTQ7WO2VZBWHAtrX_kPKvipYx1eE4BFzyGq/exec'
+    const API_URL = 'https://script.google.com/macros/s/AKfycbxKITM-q1zI3sEDasqcKhJMCjosIvco0aTQ7WO2VZBWHAtrX_kPKvipYx1eE4BFzyGq/exec';
 
     let currentUser = null;
     let pendingSetupUser = null;
@@ -547,10 +540,12 @@
 
     let html5QrScanner = null;
     let activeScannerMode = null;
-    let scanCooldown = false;
+    let isScanBusy = false;
+    let lastScannedCode = '';
+    let lastScannedAt = 0;
+    let topAlertTimer = null;
     let deferredInstallPrompt = null;
 
-    // PWA Install prompt
     window.addEventListener('beforeinstallprompt', (e) => {
       e.preventDefault();
       deferredInstallPrompt = e;
@@ -605,8 +600,50 @@
         });
         return await res.json();
       } catch (err) {
-        return { success: false, message: 'Erreur réseau ou API : ' + err.message };
+        return { success: false, reason: 'NETWORK_ERROR', message: 'Erreur réseau ou API : ' + err.message };
       }
+    }
+
+    function triggerAlertVibrate() {
+      try {
+        if (navigator && typeof navigator.vibrate === 'function') {
+          navigator.vibrate([180, 80, 180]);
+        }
+      } catch (e) {}
+    }
+
+    function showTopAlert(type, message, durationMs = 4200) {
+      const banner = document.getElementById('top-alert-banner');
+      const textEl = document.getElementById('top-alert-text');
+      if (!banner || !textEl) return;
+
+      banner.classList.remove(
+        'hidden',
+        'bg-emerald-600', 'text-white', 'border-emerald-700',
+        'bg-amber-500', 'text-slate-950', 'border-amber-600',
+        'bg-red-600', 'border-red-700'
+      );
+
+      if (type === 'success') {
+        banner.classList.add('bg-emerald-600', 'text-white', 'border-emerald-700');
+      } else if (type === 'warning') {
+        banner.classList.add('bg-amber-500', 'text-slate-950', 'border-amber-600');
+      } else {
+        banner.classList.add('bg-red-600', 'text-white', 'border-red-700');
+      }
+
+      textEl.textContent = message;
+      banner.classList.remove('hidden');
+
+      if (topAlertTimer) clearTimeout(topAlertTimer);
+      topAlertTimer = setTimeout(() => {
+        hideTopAlert();
+      }, durationMs);
+    }
+
+    function hideTopAlert() {
+      const banner = document.getElementById('top-alert-banner');
+      if (banner) banner.classList.add('hidden');
     }
 
     function hideAllViews() {
@@ -634,7 +671,6 @@
       backToLogin();
     }
 
-    // CONNEXION & 1RE CRÉATION DE CODE
     async function handleLoginSubmit(e) {
       e.preventDefault();
       const username = document.getElementById('login-username').value.trim();
@@ -780,9 +816,7 @@
       }
     }
 
-    // =========================================================================
     // SUPER-ADMIN
-    // =========================================================================
     async function editSuperAdminUsername() {
       const nextUsername = prompt('Nouvel identifiant Super-Admin :', currentUser.username);
       if (!nextUsername) return;
@@ -1081,9 +1115,7 @@
       openPrintHtml(`Rapport ${saActiveReportCompany.name} (${dateVal})`, document.getElementById('sa-report-table-wrap').innerHTML);
     }
 
-    // =========================================================================
     // ESPACE SOCIÉTÉ
-    // =========================================================================
     function switchCompanyTab(tab) {
       ['employees', 'reports', 'recharges'].forEach(t => {
         document.getElementById(`comp-tab-${t}`).classList.toggle('hidden', t !== tab);
@@ -1139,7 +1171,7 @@
                 <p class="font-bold text-slate-900">${emp.full_name} <span class="text-xs font-extrabold text-blue-900">(${emp.matricule})</span></p>
                 <p class="text-xs text-slate-500">Solde : <strong class="text-slate-900">${emp.credits}</strong> crédit(s)</p>
               </div>
-              <button type="button" onclick="toggleInlineEmployeeQr('${emp.matricule}', '${safeName}', '${emp.qr_value}')"
+              <button type="button" onclick="toggleInlineEmployeeQr('${emp.matricule}')"
                 class="px-3.5 py-1.5 rounded-xl ${isQrOpen ? 'bg-slate-700 text-white' : 'bg-slate-900 hover:bg-slate-800 text-white'} text-xs font-bold btn-smooth">
                 ${isQrOpen ? 'Masquer QR' : 'Voir QR'}
               </button>
@@ -1468,9 +1500,7 @@
       openPrintHtml(`Rapport Recharges ${currentUser.company_code} (${dateSuffix})`, document.getElementById('comp-recharges-table').innerHTML);
     }
 
-    // =========================================================================
     // ESPACE RESTAURANT
-    // =========================================================================
     function switchRestaurantTab(tab) {
       stopActiveScanner();
       ['scan', 'refund', 'report'].forEach(t => {
@@ -1497,6 +1527,9 @@
         html5QrScanner = null;
       }
       activeScannerMode = null;
+      isScanBusy = false;
+      lastScannedCode = '';
+      lastScannedAt = 0;
       document.getElementById('btn-toggle-scan').textContent = 'Démarrer le scan';
       document.getElementById('btn-toggle-refund').textContent = 'Scanner pour rembourser';
     }
@@ -1518,12 +1551,22 @@
       try {
         await html5QrScanner.start(
           { facingMode: 'environment' },
-          { fps: 10, qrbox: { width: 220, height: 220 } },
+          { fps: 15, qrbox: { width: 220, height: 220 } },
           async (decodedText) => {
-            if (scanCooldown) return;
-            scanCooldown = true;
-            await processQrScan(mode, decodedText);
-            setTimeout(() => { scanCooldown = false; }, 1600);
+            const cleanText = String(decodedText || '').trim();
+            const now = Date.now();
+            if (isScanBusy) return;
+            if (cleanText === lastScannedCode && (now - lastScannedAt) < 1100) return;
+
+            isScanBusy = true;
+            lastScannedCode = cleanText;
+            lastScannedAt = now;
+
+            try {
+              await processQrScan(mode, cleanText);
+            } finally {
+              setTimeout(() => { isScanBusy = false; }, 350);
+            }
           },
           () => {}
         );
@@ -1537,6 +1580,8 @@
       const boxId = mode === 'scan' ? 'scan-result-box' : 'refund-result-box';
       const box = document.getElementById(boxId);
       box.classList.remove('hidden');
+      box.className = 'p-3.5 rounded-2xl border text-xs font-semibold bg-slate-50 text-slate-700 border-slate-200';
+      box.textContent = 'Vérification en cours...';
 
       const action = mode === 'scan' ? 'scan_meal' : 'refund_meal_by_qr';
       const res = await callApi(action, {
@@ -1545,17 +1590,30 @@
       });
 
       if (!res.success) {
-        box.className = 'p-4 rounded-2xl border text-sm font-semibold bg-red-50 text-red-800 border-red-200';
-        box.textContent = res.message || 'Opération refusée.';
+        triggerAlertVibrate();
+        const isAlreadyToday = res.reason === 'ALREADY_SERVED_TODAY';
+        const alertType = isAlreadyToday ? 'warning' : 'error';
+
+        box.className = isAlreadyToday
+          ? 'p-4 rounded-2xl border text-sm font-semibold bg-amber-50 text-amber-950 border-amber-300'
+          : 'p-4 rounded-2xl border text-sm font-semibold bg-red-50 text-red-900 border-red-300';
+
+        const msg = res.message || 'Opération refusée.';
+        box.textContent = msg;
+        showTopAlert(alertType, msg, 4500);
         return;
       }
 
       if (mode === 'scan') {
-        box.className = 'p-4 rounded-2xl border text-sm font-semibold bg-emerald-50 text-emerald-900 border-emerald-200';
-        box.textContent = `Repas validé (-1) : ${res.employee_name} (${res.matricule}) • Reste : ${res.remaining_credits} crédit(s).`;
+        const msg = res.message || `Repas débité (-1) : ${res.employee_name} (${res.matricule}) • Reste : ${res.remaining_credits} crédit(s).`;
+        box.className = 'p-4 rounded-2xl border text-sm font-semibold bg-emerald-50 text-emerald-900 border-emerald-300';
+        box.textContent = msg;
+        showTopAlert('success', msg, 3800);
       } else {
-        box.className = 'p-4 rounded-2xl border text-sm font-semibold bg-amber-50 text-amber-900 border-amber-200';
-        box.textContent = `Remboursement validé (+1) : ${res.employee_name} (${res.matricule}) • Nouveau solde : ${res.new_credits} crédit(s).`;
+        const msg = `Remboursement validé (+1) : ${res.employee_name} (${res.matricule}) • Nouveau solde : ${res.new_credits} crédit(s).`;
+        box.className = 'p-4 rounded-2xl border text-sm font-semibold bg-emerald-50 text-emerald-900 border-emerald-300';
+        box.textContent = msg;
+        showTopAlert('success', msg, 4000);
       }
     }
 
@@ -1638,9 +1696,7 @@
       openPrintHtml(`Rapport Restaurant ${currentUser.restaurant_code} (${dateVal})`, document.getElementById('rest-report-table').innerHTML);
     }
 
-    // =========================================================================
-    // OUTILS EXPORT & IMPRESSION
-    // =========================================================================
+    // EXPORT & IMPRESSION
     function downloadCsvFile(filename, rows) {
       const csvContent = rows
         .map(r => r.map(val => `"${String(val ?? '').replace(/"/g, '""')}"`).join(';'))
