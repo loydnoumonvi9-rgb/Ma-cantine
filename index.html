@@ -524,8 +524,8 @@
   </main>
 
   <script>
-    // 'https://script.google.com/macros/s/AKfycbxKITM-q1zI3sEDasqcKhJMCjosIvco0aTQ7WO2VZBWHAtrX_kPKvipYx1eE4BFzyGq/exec'
-    const API_URL = 'https://script.google.com/macros/s/AKfycbxKITM-q1zI3sEDasqcKhJMCjosIvco0aTQ7WO2VZBWHAtrX_kPKvipYx1eE4BFzyGq/exec';
+    // 'https://script.google.com/macros/s/AKfycbzypgqGJh_gujj6sq9L8nELmk0Mlp1nvtWd-BoUJyaWnoM6yrV56PSYs4cs5uHZEOsy/exec'
+    const API_URL = 'https://script.google.com/macros/s/AKfycbzypgqGJh_gujj6sq9L8nELmk0Mlp1nvtWd-BoUJyaWnoM6yrV56PSYs4cs5uHZEOsy/exec';
 
     let currentUser = null;
     let pendingSetupUser = null;
@@ -1576,7 +1576,7 @@
       }
     }
 
-    async function processQrScan(mode, qrValue) {
+        async function processQrScan(mode, qrValue) {
       const boxId = mode === 'scan' ? 'scan-result-box' : 'refund-result-box';
       const box = document.getElementById(boxId);
       box.classList.remove('hidden');
@@ -1591,7 +1591,7 @@
 
       if (!res.success) {
         triggerAlertVibrate();
-        const isAlreadyToday = res.reason === 'ALREADY_SERVED_TODAY';
+        const isAlreadyToday = res.reason === 'ALREADY_SERVED_TODAY' || res.reason === 'ALREADY_REFUNDED_TODAY';
         const alertType = isAlreadyToday ? 'warning' : 'error';
 
         box.className = isAlreadyToday
@@ -1605,12 +1605,12 @@
       }
 
       if (mode === 'scan') {
-        const msg = res.message || `Repas débité (-1) : ${res.employee_name} (${res.matricule}) • Reste : ${res.remaining_credits} crédit(s).`;
+        const msg = res.message || `Compte débité (-1) : ${res.employee_name} (${res.matricule}) • Reste : ${res.remaining_credits} crédit(s).`;
         box.className = 'p-4 rounded-2xl border text-sm font-semibold bg-emerald-50 text-emerald-900 border-emerald-300';
         box.textContent = msg;
         showTopAlert('success', msg, 3800);
       } else {
-        const msg = `Remboursement validé (+1) : ${res.employee_name} (${res.matricule}) • Nouveau solde : ${res.new_credits} crédit(s).`;
+        const msg = res.message || `Remboursement validé (+1) : ${res.employee_name} (${res.matricule}) • Nouveau solde : ${res.new_credits} crédit(s).`;
         box.className = 'p-4 rounded-2xl border text-sm font-semibold bg-emerald-50 text-emerald-900 border-emerald-300';
         box.textContent = msg;
         showTopAlert('success', msg, 4000);
